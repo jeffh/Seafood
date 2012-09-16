@@ -4,15 +4,15 @@ Salt Configurations
 
 Here is an example of how to set up a salt configuration system. It includes:
 
- - Bootstrapping script (via fabric)
- - Customizable configurations for different groups of systems
+- Bootstrapping script (via fabric)
+- Customizable configurations for different groups of systems
    (ie - raspberrypi is separated from a different results)
 
 As well as a reference for some moderate tasks:
 
- - How to use pillars
- - How to write your own modules
- - How to write your own states
+- How to use pillars
+- How to write your own modules
+- How to write your own states
 
 This currently only supports Debian / Ubuntu.
 
@@ -34,8 +34,8 @@ Then install all the other dependencies::
 
 Now you'll need to configure rename some sample files:
 
- - copy bootstrapper/hosts_sample.py => bootstrapper/hosts.py and edit as appropriate for the hosts to connect.
- - copy configurations/yacs/pillars/passwords_sample.sls => configurations/yacs/pillars/passwords.sls and edit as appropriate. This is only for the yacs configuration (used in "How to use" section).
+- copy bootstrapper/hosts_sample.py => bootstrapper/hosts.py and edit as appropriate for the hosts to connect.
+- copy configurations/yacs/pillars/passwords_sample.sls => configurations/yacs/pillars/passwords.sls and edit as appropriate. This is only for the yacs configuration (used in "How to use" section).
 
 ----------
 How to use
