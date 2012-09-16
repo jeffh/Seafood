@@ -22,13 +22,13 @@ Installation
 
 This configuration requires the following dependencies:
 
- - `Python`_
- - `pip`_
+- `Python`_
+- `pip`_
 
 .. _Python: http://python.org/
 .. _pip: http://www.pip-installer.org/en/latest/index.html
 
-Then install all the other dependencies:
+Then install all the other dependencies::
 
     pip install -r requirements.txt
 
@@ -43,8 +43,7 @@ How to use
 
 Now you can do various `fabric`_ commands to manage basic deployments.
 
-
-Let's do a basic deploy using `fabric`_. First, we'll set up the salt master.
+Let's do a basic deploy using `fabric`_. First, we'll set up the salt master::
 
     fab verbose include:yacs hosts.deploy_host setup_master
 
@@ -57,16 +56,16 @@ Let's break this command down:
 - ``hosts.deploy_hosts`` refers to the host to deploy to. They're specified in bootstrapper/hosts.py file. Alternatively, you can use '-H <hostname>' argument instead.
 - ``setup_master`` bootstraps salt master and salt minion (which points to itself).
 
-Also, if you want also do an ``apt-get upgrade`` while bootstrapping, you can pass the upgrade=1 argument:
+Also, if you want also do an ``apt-get upgrade`` while bootstrapping, you can pass the upgrade=1 argument::
 
 	fab include:yacs hosts.deploy_host setup_master:upgrade=1
 
 It will reboot as necessary after the upgrade.
-If you want to see all the detailed output, prefix with the ``verbose`` command:
+If you want to see all the detailed output, prefix with the ``verbose`` command::
 
 	fab include:yacs hosts.deploy_host setup_master
 
-All good? Let's deploy a salt minion on another machine:
+All good? Let's deploy a salt minion on another machine::
 
 	fab hosts.deploy_client setup_minion_for_master:hosts.deploy_host,192.168.1.119
 
@@ -81,7 +80,7 @@ This command actually is several commands:
 - ``fab hosts.deploy_host lowlevel.generate_minion_key:<hostname>`` Tells the master to generate a public/private key for <hostname> (which is from the previous command)
 - ``fab hosts.deploy_client minion:192.168.1.119`` Bootstraps the minion which the salt pointed to the given ip address.
 
-Now that both machines are bootstrapped, you can force the salt highstate with a set of configurations:
+Now that both machines are bootstrapped, you can force the salt highstate with a set of configurations::
 
     fab include:yacs hosts.deploy_host deploy
 
@@ -94,10 +93,10 @@ What does this do?
 Development
 -----------
 
-You can use the ``develop`` command before ``setup_master`` and ``setup_minion`` to deploy with the latest git branch (useful for verifying bugfixes):
+You can use the ``develop`` command before ``setup_master`` and ``setup_minion`` to deploy with the latest git branch (useful for verifying bugfixes)::
 
     fab include:yacs hosts.deploy_host develop setup_master
 
-Alternatively, you can provide a different public git repository to clone:
+Alternatively, you can provide a different public git repository to clone::
 
     fab include:yacs hosts.deploy_host develop:'git://github.com/jeffh/salt.git' setup_master
