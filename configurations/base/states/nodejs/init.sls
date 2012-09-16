@@ -1,0 +1,3 @@
+nodejs:
+    pkg:
+        - installed

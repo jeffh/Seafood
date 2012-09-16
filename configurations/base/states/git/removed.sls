@@ -1,0 +1,3 @@
+git:
+    pkg:
+        - purged

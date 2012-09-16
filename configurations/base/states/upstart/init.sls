@@ -1,0 +1,3 @@
+upstart:
+    pkg:
+        - installed

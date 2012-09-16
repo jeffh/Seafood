@@ -1,0 +1,3 @@
+lsb-release:
+    pkg:
+        - installed
