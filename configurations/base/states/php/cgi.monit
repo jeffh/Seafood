@@ -1,0 +1,7 @@
+check process php5-cgi with pidfile {{ pidfile }}
+    group service
+    start program = "/usr/bin/env FCGI_HOST=%(host)s FCGI_PORT=%(port)s PHP_FCGI_CHILDREN=8 PHP_FCGI_MAX_REQUESTS=1000 /etc/init.d/php-fcgi start"
+        as uid %(user)s and gid %(group)s
+    stop program = "/usr/bin/env /etc/init.d/php-fcgi stop"
+	        as uid %(user)s and gid %(group)s
+    if failed port {{ port }} protocol http then restart

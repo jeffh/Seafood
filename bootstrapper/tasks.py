@@ -1,9 +1,10 @@
 import os
+import sys
 
 from fabric.api import local, sudo, task
 
 from bootstrapper import lowlevel
-from bootstrapper.helpers import puts, has
+from bootstrapper.helpers import puts, has, runner
 
 ############################# HIGH-LEVEL FUNCTIONS ##############################
 @task
@@ -40,7 +41,7 @@ def setup_minion_for_master(master_cmd, master_ip, upgrade=0):
     ex: fab setup_minion_for_master:deploy_host,192.168.1.119
     """
     host = lowlevel.hostname()
-    puts("Setting up minion ({0}) for master ({1})".format(repr(host), repr(master_ip)))
+    runner.action("Set up minion ({0}) for master ({1})".format(repr(host), repr(master_ip)))
     local('fab {0} lowlevel.generate_minion_key:{1}'.format(master_cmd, host))
     setup_minion(master_ip, upgrade, 'minion.pub', 'minion.pem')
 
@@ -52,18 +53,16 @@ def deploy(filter='*', upload=1, debug=0):
     If debug is set to true, runs locally with more debugging information output.
     If upload is set to true, then uploads current salt configurations to the master before deploying.
     """
-    if has('/opt/saltstack/', 'test -e %(app)s'):
-        lowlevel.upgrade_bleeding()
-    if int(upload):
-        lowlevel.upload()
-    if int(debug):
-        cmd = "salt-call state.highstate -l debug"
-    else:    
-        cmd = "salt '{0}' state.highstate".format(filter)
-    puts(" - RUN {0}".format(cmd))
-    output = sudo(cmd)
-    puts()
-    puts()
-    puts("============= RESULT ===============")
-    puts(output)
+    runner.action('Deploying salt files')
+    output = ''
+    with runner.with_prefix('  '):
+        if has('/opt/saltstack/', 'test -e %(app)s'):
+            lowlevel.upgrade_bleeding()
+        if int(upload):
+            lowlevel.upload()
+        if int(debug):
+            cmd = "salt-call state.highstate -l debug"
+        else:    
+            cmd = "salt '{0}' state.highstate".format(filter)
+        output = runner.sudo(cmd, combine_stderr=True, stdout=sys.stdout)
 

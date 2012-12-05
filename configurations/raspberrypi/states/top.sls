@@ -12,7 +12,9 @@ base:
         - python.virtualenv
         - mercurial
         - git
-        - golang.source.arm5
     'os:(Ubuntu|Debian)':
         - match: grain_pcre
         - unattended-upgrades
+    master:
+        - match: nodegroup
+        - salt-master.highstate.hourly

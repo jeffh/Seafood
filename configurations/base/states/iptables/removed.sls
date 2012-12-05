@@ -1,7 +1,9 @@
 iptables:
     pkg:
         - purge
-    crontab.absent:
+    cron.rm:
+        - user: root
+        - special: @reboot
         - name: '/sbin/iptables-restore < /etc/iptables.up.rules'
 
 '/etc/iptables-startup.sh && (md5sum /etc/iptables-startup.sh | cut -d " " -f 1 > /tmp/iptables.md5)':

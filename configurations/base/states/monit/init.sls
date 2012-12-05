@@ -1,6 +1,5 @@
 monit:
-    pkg:
-        - installed
+    pkg.installed:
         - order: 1
     service.running:
         - enabled: true

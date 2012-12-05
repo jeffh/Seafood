@@ -1,5 +1,6 @@
 sshd:
-    pkg.installed:
+    pkg:
+        - installed
         {% if grains['os'] in ('Ubuntu','Debian') %}
         - name: openssh-server
         {% endif %}

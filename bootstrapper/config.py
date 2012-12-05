@@ -1,7 +1,11 @@
+import sys
 import os
+from StringIO import StringIO
 
 from fabric.api import task, env
 from fabric.state import output
+
+from bootstrapper.helpers import runner
 
 # set fabric's default verbosity to be a minimal.
 output['everything'] = False
@@ -10,6 +14,10 @@ output['user'] = True
 SALT_DIR = '/opt/salt/'
 CONFIG_DIR = os.path.abspath('configurations')
 env.configs = ['base']
+env.salt_bleeding = False
+
+runner.types['state'] = sys.stdout
+runner.types['action'] = sys.stdout
 
 ############################# CONFIGURATION #########################    
 @task
@@ -28,6 +36,8 @@ def include(name):
 def verbose():
     """Re-enables fabric's verbosity."""
     output['everything'] = True
+    runner.types['state'] = runner.types['action'] = StringIO()
+    runner.types['ALL'] = sys.stdout
 
 
 @task
@@ -35,7 +45,8 @@ def quiet():
     "Suppresses most output."
     output['everything'] = False
     output['user'] = True
-
+    runner.types['cmd'] = runner.types['state'] = runner.types['ALL'] = StringIO()
+    runner.types['action'] = sys.stdout
 
 @task
 def develop(repo='git://github.com/saltstack/salt.git'):
