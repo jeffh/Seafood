@@ -13,13 +13,15 @@ base:
         - nodejs.npm
         - nodejs.coffeescript
         - postgresql
-        - postgresql.libpq
+        - postgresql.dev
         - monit
         - java
         - python
         - python.dev
         - python.pip
         - python.virtualenv
+        - salt-master.highstate.hourly
+        - ksplice
         - yacs
     'os:(Ubuntu|Debian)':
         - match: grain_pcre

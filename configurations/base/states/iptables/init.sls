@@ -66,10 +66,10 @@ iptables:
         - watch:
             - pkg: iptables
             - file: /etc/iptables-startup.sh
-    cron.set_special:
+    cron.present:
+        - name: '/sbin/iptables-restore < /etc/iptables.up.rules'
         - user: root
-        - special: @reboot
-        - cmd: '/sbin/iptables-restore < /etc/iptables.up.rules'
+        - minute: '0'
         - require:
             - file: /etc/iptables-startup.sh
 

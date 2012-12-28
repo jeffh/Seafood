@@ -1,10 +1,11 @@
 import time
 import sys
+from functools import wraps
 from collections import defaultdict
 from StringIO import StringIO
 from contextlib import contextmanager
 
-from fabric.api import sudo, run, local, settings, hide, env
+from fabric.api import sudo, run, local, settings, hide, env, task
 from fabric.utils import puts
 
 class Fabric:
@@ -85,16 +86,16 @@ runner = Fabric()
 class Apt(object):
     name = 'apt'
     def update(self):
-        runner.state('Upgrading sources')
+        runner.state('Update sources')
         return runner.sudo('apt-get update -yq')
         
     def upgrade(self):
-        runner.state('Upgrading packages')
+        runner.state('Upgrade packages')
         return runner.sudo('apt-get upgrade -yq')
         
     def install(self, *pkgs):
         runner.state('Install: {0}', ', '.join(pkgs))
-        return runner.sudo('apt-get install -yq ' + ' '.join(pkgs))
+        return runner.sudo('apt-get install -yq --force-yes ' + ' '.join(pkgs))
         
     def remove(self, *pkgs):
         runner.state('Uninstall: {0}', ', '.join(pkgs))
@@ -149,20 +150,51 @@ def service(service, action):
             raise TypeError('Invalid service action: {0}'.format(action))
         return
     # normal deploy
-    if is_distro('ubuntu'):
-        sudo('service %s %s' % (service, action))
+    if has('service'):
+        sudo('service %s %s; true' % (service, action))
     else:
-        sudo('/etc/init.d/%s %s' % (service, action))
+        sudo('/etc/init.d/%s %s; true' % (service, action))
+
+def requires_host(fn):
+    """A decorator that checks if env.hosts is set before proceeding."""
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        assert env.hosts or env.roledefs, "No host to use. Did you forget to set this?"
+        return fn(*args, **kwargs)
+    return wrapper
 
 
-def add_host(name, password=None):
+def requires_configuration(fn):
+    """A decorator that checks if a env.config is set to more
+    than just the base configuration.
+    """
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        assert list(env.configs) != ['base'], 'No configuration specified. Did you forget to set this?'
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+def add_host(name, password=None, roles=None):
     """Helper method to add a host with a password. This is used more for testing.
 
     YOU REALLY SHOULDN'T ADD PASSWORDS HERE.
     """
+    if roles:
+        env.roledefs = env.roledefs or defaultdict(list)
+        for role in roles:
+            env.roledefs[role].append(name)
     runner.state('Added host target: {0}', name)
     env.hosts += [name]
 
     if password is None:
         return
     env.passwords[name] = password
+
+
+@task
+def clear():
+    "Removes all added hosts"
+    env.hosts = []
+    env.roledefs = None
+    env.passwords = {}

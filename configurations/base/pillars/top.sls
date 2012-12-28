@@ -2,4 +2,4 @@ base:
     '*':
         - users
         - firewall
-
+        - ksplice

@@ -12,6 +12,8 @@ output['everything'] = False
 output['user'] = True
 
 SALT_DIR = '/opt/salt/'
+MASTER_MINIONS_DIR = '/etc/salt/pki/master/minions/'
+MINION_KEY_PATH = '/etc/salt/pki/minion'
 CONFIG_DIR = os.path.abspath('configurations')
 env.configs = ['base']
 env.salt_bleeding = False
