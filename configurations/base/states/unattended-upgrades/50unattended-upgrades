@@ -1,5 +1,5 @@
 Unattended-Upgrade::Allowed-Origins {
-    "Ubuntu lucid-security";
+    "Ubuntu {{ grains['oscodename'] }}-security";
     //"Ubuntu lucid-updates";
 };
 

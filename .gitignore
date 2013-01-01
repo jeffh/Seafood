@@ -1,6 +1,9 @@
 *.pyc
-configurations/*/pillars/ksplice.sls
 configurations/*/states/users/keys/*
-configurations/yacs/pillars/passwords.sls
+ksplice.sls
+passwords.sls
+configurations/**/fundamentals*
+configurations/net.jeffhui.net/*/top.sls
 keys/*
 bootstrapper/hosts.py
+sync.log

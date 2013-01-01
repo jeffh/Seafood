@@ -36,7 +36,7 @@ monit:
         - mode: 600
         - template: jinja
         - defaults:
-            interval: 120 # seconds
+            interval: 15 # seconds
             interval_start_delay: 0 # seconds
             logfile: /var/log/monit.log
             idfile: /var/lib/monit/id

@@ -23,7 +23,7 @@ postgresql:
 # monit file
 '/etc/monit/conf.d/postgresql.conf':
     optional_file.managed:
-        - ifonly: '[ -d "/etc/monit/conf.d/" ]'
+        - onlyif: '[ -d "/etc/monit/conf.d/" ]'
         - source: salt://postgresql/monit.conf
         - user: root
         - group: root

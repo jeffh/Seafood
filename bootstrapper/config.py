@@ -17,6 +17,7 @@ MINION_KEY_PATH = '/etc/salt/pki/minion'
 CONFIG_DIR = os.path.abspath('configurations')
 env.configs = ['base']
 env.salt_bleeding = False
+env.salt_roles = []
 
 runner.types['state'] = sys.stdout
 runner.types['action'] = sys.stdout
@@ -32,6 +33,20 @@ def include(name):
         fab config:"yacs foo" # same as above
     """
     env.configs = name.split(' ') + env.configs
+
+
+@task
+def roles(*args):
+    """Sets the roles assign to the targeted machine. Can provide a comma-separated
+    list of roles.
+    
+    The salt master will always include the 'salt-master' role.
+    
+    Example:
+    
+        fab roles:yacs,db deploy_minion
+    """
+    env.salt_roles.extend(args)
 
 
 @task

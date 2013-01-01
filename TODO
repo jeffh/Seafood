@@ -1,0 +1,14 @@
+Things that can be improved:
+ - Make KSplice support more than debian/ubuntu OSes
+ - Finish PHP support
+ - Finish HG support
+ - Finish postfix support
+ - Add gitolite support
+ - Fix/Remove golang
+ - Fix/Remove ruby/rvm support
+ - Add ability to set global configs to git
+ - TEST on another linux distro!
+
+Bugs:
+ - Detect deadlocks for <0.10.5 or until distros bundle it:
+   https://github.com/saltstack/salt/issues/2423

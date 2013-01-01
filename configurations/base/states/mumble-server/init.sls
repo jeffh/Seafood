@@ -29,7 +29,7 @@ mumble-server:
 
 '/etc/monit/conf.d/mumble-server.conf':
     optional_file.managed:
-        - ifonly: '[ -e /etc/monit/conf.d/ ]'
+        - onlyif: '[ -e /etc/monit/conf.d/ ]'
         - source: salt://mumble-server/monit.conf
         - user: root
         - group: root

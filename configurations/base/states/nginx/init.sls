@@ -8,7 +8,7 @@ nginx:
 
 '/etc/monit/conf.d/nginx.conf':
     optional_file.managed:
-        - ifonly: '[ -e /etc/monit/conf.d/ ]'
+        - onlyif: '[ -e /etc/monit/conf.d/ ]'
         - source: salt://nginx/monit.conf
         - user: root
         - group: root
@@ -41,16 +41,20 @@ nginx:
             - pkg: nginx
             
 '/etc/nginx/sites-enabled/':
-    file.recurse:
+    file.directory:
         - user: root
         - group: root
-        - mode: 644
-        - clean: true
-        - source: salt://nginx/sites/
+        - file_mode: 644
+        - dir_mode: 755
         - require:
             - pkg: nginx
             - file: /etc/nginx/
-            
+
+'/etc/nginx/sites-enabled/default':
+    file.absent:
+        - require:
+            - pkg: nginx
+
 
 '/etc/nginx/nginx.conf':
     file.managed:

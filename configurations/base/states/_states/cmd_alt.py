@@ -43,9 +43,9 @@ from salt.exceptions import CommandExecutionError
 import salt.utils.templates
 
 
-def _run_check(cmd_kwargs, ifonly, unless, cwd, user, group, shell):
+def _run_check(cmd_kwargs, onlyif, unless, cwd, user, group, shell):
     '''
-    Execute the ifonly logic and return data if the ifonly fails
+    Execute the onlyif logic and return data if the onlyif fails
     '''
     ret = {}
 
@@ -67,11 +67,11 @@ def _run_check(cmd_kwargs, ifonly, unless, cwd, user, group, shell):
             del kwargs[key]
     allowed_kwargs = cmd_kwargs.pop('env', None) or ()
 
-    if ifonly:
-        if __salt__['cmd.retcode'](ifonly, **kwargs) != 0:
-            ret['comment'] = 'ifonly exec failed'
+    if onlyif:
+        if __salt__['cmd.retcode'](onlyif, **kwargs) != 0:
+            ret['comment'] = 'onlyif exec failed'
             ret['result'] = True
-            return {'comment': 'ifonly exec failed',
+            return {'comment': 'onlyif exec failed',
                     'result': True}
 
     if unless:
@@ -83,7 +83,7 @@ def _run_check(cmd_kwargs, ifonly, unless, cwd, user, group, shell):
 
 
 def wait(name,
-        ifonly=None,
+        onlyif=None,
         unless=None,
         cwd='/root',
         user=None,
@@ -96,9 +96,9 @@ def wait(name,
         The command to execute, remember that the command will execute with the
         path and permissions of the salt-minion.
 
-    ifonly
+    onlyif
         A command to run as a check, run the named command only if the command
-        passed to the ``ifonly`` option returns true
+        passed to the ``onlyif`` option returns true
 
     unless
         A command to run as a check, only run the named command if the command
@@ -126,7 +126,7 @@ def wait(name,
 def wait_script(name,
         source=None,
         template=None,
-        ifonly=None,
+        onlyif=None,
         unless=None,
         cwd='/root',
         user=None,
@@ -142,9 +142,9 @@ def wait_script(name,
         The command to execute, remember that the command will execute with the
         path and permissions of the salt-minion.
 
-    ifonly
+    onlyif
         A command to run as a check, run the named command only if the command
-        passed to the ``ifonly`` option returns true
+        passed to the ``onlyif`` option returns true
 
     unless
         A command to run as a check, only run the named command if the command
@@ -170,7 +170,7 @@ def wait_script(name,
 
 
 def run(name,
-        ifonly=None,
+        onlyif=None,
         unless=None,
         cwd='/root',
         user=None,
@@ -185,9 +185,9 @@ def run(name,
         The command to execute, remember that the command will execute with the
         path and permissions of the salt-minion.
 
-    ifonly
+    onlyif
         A command to run as a check, run the named command only if the command
-        passed to the ``ifonly`` option returns true
+        passed to the ``onlyif`` option returns true
 
     unless
         A command to run as a check, only run the named command if the command
@@ -234,7 +234,7 @@ def run(name,
                   'env': env}
 
     try:
-        cret = _run_check(cmd_kwargs, ifonly, unless, cwd, user, group, shell)
+        cret = _run_check(cmd_kwargs, onlyif, unless, cwd, user, group, shell)
         if isinstance(cret, dict):
             ret.update(cret)
             return ret
@@ -262,7 +262,7 @@ def run(name,
 def script(name,
         source=None,
         template=None,
-        ifonly=None,
+        onlyif=None,
         unless=None,
         cwd='/root',
         user=None,
@@ -278,9 +278,9 @@ def script(name,
         The command to execute, remember that the command will execute with the
         path and permissions of the salt-minion.
 
-    ifonly
+    onlyif
         A command to run as a check, run the named command only if the command
-        passed to the ``ifonly`` option returns true
+        passed to the ``onlyif`` option returns true
 
     unless
         A command to run as a check, only run the named command if the command
@@ -328,7 +328,7 @@ def script(name,
         source = name
 
     try:
-        cret = _run_check(cmd_kwargs, ifonly, unless, cwd, user, group, shell)
+        cret = _run_check(cmd_kwargs, onlyif, unless, cwd, user, group, shell)
         if isinstance(cret, dict):
             ret.update(cret)
             return ret

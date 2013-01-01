@@ -4,8 +4,8 @@ import os
 import sys
 import time
 
-from fabric.api import (reboot, task, env, sudo, runs_once, local,
-    settings, cd, run, roles, get, put, parallel)
+from fabric.api import (reboot, env, sudo, runs_once, local,
+    settings, cd, run, roles, get, put, parallel, task)
 from fabric.contrib import files
 from fabric.contrib.project import upload_project
 from fabric import operations
@@ -16,14 +16,14 @@ from bootstrapper.config import CONFIG_DIR, SALT_DIR, MASTER_MINIONS_DIR, MINION
 
 
 
-@task
+
 def upgrade_all_packages():
     "Updates all packages"
     find_pkgmgr().upgrade()
     reboot_if_required()
 
 
-@task
+
 def convert_to_bleeding():
     "Converts the master installation to bleeding edge."
     runner.action('Convert Salt to bleeding edge')
@@ -44,7 +44,7 @@ def convert_to_bleeding():
             sudo('python setup.py install')
 
 
-@task
+
 def upgrade_bleeding():
     "Upgrades the bleeding edge and reinstall it."
     runner.action('Upgrade bleeding edge salt installation')
@@ -58,7 +58,7 @@ def upgrade_bleeding():
             service('salt-master', 'start')
             service('salt-minion', 'start')
 
-@task
+
 def bootstrap_with_aptget(upgrade):
     "Bootstraps installation of saltstalk on the remote machine"
     apt = find_pkgmgr()
@@ -83,17 +83,16 @@ EOF''')
         raise TypeError("Unknowned OS")
 
     if upgrade:
-        runner.state('Upgrade system packages')
         upgrade_all_packages()
 
     if requires_update:
         apt.update()
 
 
-@task
+
 def bootstrap(upgrade=1):
     "Performs a bootstrap depending on the operating system."
-    runner.action('Bootstrapping installation')
+    runner.action('Bootstrapping salt')
     with runner.with_prefix(' ~> '):
         pkgmgr = find_pkgmgr()
         bootstrappers = {
@@ -104,9 +103,9 @@ def bootstrap(upgrade=1):
         bootstrappers[pkgmgr.name](int(upgrade))
 
 
-@task
+
 @roles('minion')
-def minion(master, hostname, develop=False):
+def minion(master, hostname, roles=(), develop=False):
     """Sets up the salt-minion on the remote server.
     Argument should be the ip address of the salt master.
     """
@@ -125,7 +124,7 @@ def minion(master, hostname, develop=False):
             service('salt-minion', 'start')
 
         upload_minion_key(hostname)
-        upload_minion_config()
+        upload_minion_config(roles)
 
 
 @task
@@ -143,7 +142,7 @@ def hostname(name='', fqdn=True):
         return sudo('hostname {0}'.format('-f' if fqdn else '')).strip()
 
 
-@task
+
 @roles('minion')
 def upload_minion_key(hostname, minion_key_dir=None):
     "Installs the minion key generated from the master."
@@ -162,7 +161,7 @@ def upload_minion_key(hostname, minion_key_dir=None):
     sudo('chmod 644 {key_dir}/minion.pub'.format(**context))
 
 
-@task
+
 @roles('master')
 def create_minion_key(hostname, key_dir=None):
     """Geneates a minion key for the given hostname. It then downloads
@@ -183,7 +182,7 @@ def create_minion_key(hostname, key_dir=None):
     get(hostname + '.pub', os.path.join('keys', hostname + '.pub'))
 
 
-@task
+
 @roles('master')
 def master():
     "Sets up the salt-master on the remote server."
@@ -209,13 +208,19 @@ def config_template_upload(filename, dest, context={}, use_sudo=True):
     raise TypeError('Could not find {0} to upload in any configuration!'.format(repr(filename)))
 
 
-@task
+def salt_config_context(roles=()):
+    return {
+        'saltfiles': SALT_DIR,
+        'configs': env.configs,
+        'roles': roles,
+    }
+
+
 @roles('master')
 def upload_master_config():
     "Uploads master config to the remote server and restarts the salt-master."
-    context = {'saltfiles': SALT_DIR, 'configs': env.configs}
     runner.state('Upload master configuration')
-    config_template_upload('master', '/etc/salt/master', context=context)
+    config_template_upload('master', '/etc/salt/master', context=salt_config_context())
     runner.state("Reboot master")
     service('salt-master', 'stop')
     silent('pkill salt-master', use_sudo=True) # to ensure it gets killed
@@ -223,21 +228,20 @@ def upload_master_config():
     service('salt-master', 'start')
 
 
-@task
+
 @roles('minion')
-def upload_minion_config():
+def upload_minion_config(roles=()):
     "Uploads the minion config to the remote server and restarts the salt-minion."
-    context = {'saltfiles': SALT_DIR, 'configs': env.configs}
     runner.state('Upload minion configuration')
-    config_template_upload('minion', '/etc/salt/minion', context=context)
+    config_template_upload('minion', '/etc/salt/minion', context=salt_config_context(roles))
     runner.state("Reboot minion")
-    service('salt-minion', 'stop')
+    service('salt-minion', 'stop; true')
     silent('pkill salt-minion', use_sudo=True)
     time.sleep(1)
     service('salt-minion', 'start')
 
 
-@task
+
 @requires_configuration
 def upload(sync=True):
     "Uploads all pillars, modules, and states to the remote server."
@@ -268,7 +272,7 @@ def upload(sync=True):
             sudo("salt '*' saltutil.sync_all")
 
 
-@task
+
 def reboot_if_required():
     """Reboots the machine only if the system indicates a restart is required for updates.
     """

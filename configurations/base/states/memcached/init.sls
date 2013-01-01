@@ -29,7 +29,7 @@ memcached:
 
 '/etc/monit/conf.d/memcached.conf':
     optional_file.managed:
-        - ifonly: '[ -e /etc/monit/conf.d/ ]'
+        - onlyif: '[ -e /etc/monit/conf.d/ ]'
         - source: salt://memcached/monit.conf
         - user: root
         - group: root

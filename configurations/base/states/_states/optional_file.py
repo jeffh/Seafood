@@ -4,16 +4,16 @@ optional_files - handles the management of optional files.
 This should be like the salt.states.file module, except that all its
 operations have conditional-based execution.
 """
-def _run_check(ifonly, unless, user, env):
+def _run_check(onlyif, unless, user, env):
     kwargs = {
         'runas': user,
         'env': env,
     }
     kwargs['env'] = kwargs['env'] or ()
-    if ifonly:
-        retcode = __salt__['cmd.retcode'](ifonly, **kwargs)
+    if onlyif:
+        retcode = __salt__['cmd.retcode'](onlyif, **kwargs)
         if retcode != 0:
-            return {'comment': 'ifonly exec failed (exit code=%s)' % retcode,
+            return {'comment': 'onlyif exec failed (exit code=%s)' % retcode,
                     'changes': {},
                     'result': True}
 
@@ -25,13 +25,13 @@ def _run_check(ifonly, unless, user, env):
 
     return True
 
-def managed(name, ifonly=None, unless=None, user=None, group=None, env=None, **kwargs):
+def managed(name, onlyif=None, unless=None, user=None, group=None, env=None, **kwargs):
     """Manages a given file. Defers to salt.states.file.managed.
     
-    Only executes ifonly is satisfied or the unless is not satisfied.
+    Only executes onlyif is satisfied or the unless is not satisfied.
     """
     user, env, group = kwargs.get('user'), kwargs.get('env'), kwargs.get('group')
-    cret = _run_check(ifonly, unless, user, env)
+    cret = _run_check(onlyif, unless, user, env)
     if isinstance(cret, dict):
         cret.update({'name': name})
         return cret

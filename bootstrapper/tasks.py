@@ -1,7 +1,8 @@
 import os
 import sys
 
-from fabric.api import local, sudo, task, parallel, show
+from fabric.api import local, sudo, task, parallel, show, env
+from fabric.api import roles as _roles
 from fabric.api import reboot as _reboot
 from fabric.contrib import files
 
@@ -31,6 +32,7 @@ def reboot():
     runner.action('Done')
 
 @task
+@_roles('master')
 @parallel
 @requires_host
 @requires_configuration
@@ -44,18 +46,29 @@ def setup_master(and_minion=1, upgrade=1):
     lowlevel.upload(sync=False)
     if int(and_minion):
         name = hostname()
+        roles = ['salt-master'] + list(env.salt_roles)
         lowlevel.create_minion_key(name)
-        lowlevel.minion(master='127.0.0.1', hostname=name)
+        lowlevel.minion(master='127.0.0.1', hostname=name, roles=roles)
 
 
 @task
+@_roles('master')
+@requires_host
+def create_minion_key(hostname):
+    "Creates a minion key from the master and downloads it"
+    lowlevel.create_minion_key(hostname)
+
+
+@task
+@_roles('minion')
 @parallel
 @requires_host
-@requires_configuration
-def setup_minion(master, upgrade=1):
+def setup_minion(fab_master, master, upgrade=1):
     "Bootstraps and sets up a minion. Requires the ip address of the master."
+    name = hostname()
+    local('fab {0} create_minion_key:{1}'.format(fab_master, repr(name)))
     lowlevel.bootstrap(upgrade)
-    lowlevel.minion(master)
+    lowlevel.minion(master, name, env.salt_roles)
 
 
 @task
@@ -80,6 +93,8 @@ def deploy(filter='*', upload=1, debug=0):
         else:    
             cmd = "salt '{0}' state.highstate".format(filter)
         runner.action('Ensuring minion state')
+        with show('stdout', 'stderr'):
+            out = runner.sudo(cmd, combine_stderr=True)
         with open('sync.log', 'w+') as handle:
-            runner.sudo(cmd, combine_stderr=True, stdout=handle)
+            handle.write(out)
 

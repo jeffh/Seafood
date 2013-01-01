@@ -91,11 +91,11 @@ class Apt(object):
         
     def upgrade(self):
         runner.state('Upgrade packages')
-        return runner.sudo('apt-get upgrade -yq')
+        return runner.sudo('DEBIAN_FRONTEND=noninteractive apt-get upgrade -yq -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"')
         
     def install(self, *pkgs):
         runner.state('Install: {0}', ', '.join(pkgs))
-        return runner.sudo('apt-get install -yq --force-yes ' + ' '.join(pkgs))
+        return runner.sudo('DEBIAN_FRONTEND=noninteractive apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -yq --force-yes ' + ' '.join(pkgs))
         
     def remove(self, *pkgs):
         runner.state('Uninstall: {0}', ', '.join(pkgs))
@@ -151,9 +151,9 @@ def service(service, action):
         return
     # normal deploy
     if has('service'):
-        sudo('service %s %s; true' % (service, action))
+        sudo('service %s %s' % (service, action))
     else:
-        sudo('/etc/init.d/%s %s; true' % (service, action))
+        sudo('/etc/init.d/%s %s' % (service, action))
 
 def requires_host(fn):
     """A decorator that checks if env.hosts is set before proceeding."""

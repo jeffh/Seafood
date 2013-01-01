@@ -18,20 +18,20 @@ sshd:
         - require:
             - pkg: sshd
         - defaults:
-            port: 22
-            root_can_login: true
-            allow_password_auth: true
+            port: {{ pillar['sshd'].get('port', 22) }}
+            root_can_login: {{ pillar['sshd'].get('root_can_login', True) }}
+            allow_password_auth: {{ pillar['sshd'].get('allow_password_auth', True) }}
 
 '/etc/monit/conf.d/sshd.conf':
     optional_file.managed:
-        - ifonly: '[ -e /etc/monit/conf.d/ ]'
+        - onlyif: '[ -e /etc/monit/conf.d/ ]'
         - source: salt://sshd/monit.conf
         - user: root
         - group: root
         - template: jinja
         - defaults:
             service: ssh
-            port: 22
+            port: {{ pillar['sshd'].get('port', 22) }}
             pidfile: /var/run/sshd.pid
         - require:
             - pkg: sshd

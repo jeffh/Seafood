@@ -20,7 +20,7 @@ php-cgi:
 
 '/etc/monit/conf.d/php-cgi.conf':
     optional_file.managed:
-        - ifonly: '[ -e /etc/monit/conf.d/ ]'
+        - onlyif: '[ -e /etc/monit/conf.d/ ]'
         - source: salt://php/cgi.monit
         - user: root
         - group: root

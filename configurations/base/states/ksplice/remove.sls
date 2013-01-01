@@ -9,7 +9,7 @@ ksplice:
             - pkg: ksplice
     cmd.run:
         - name: 'apt-get update'
-        - ifonly: 'apt-cache policy | grep -E ksplice'
+        - onlyif: 'apt-cache policy | grep -E ksplice'
         - watch:
             - file: '/etc/apt/sources.list.d/ksplice.list'
 

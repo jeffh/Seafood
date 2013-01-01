@@ -6,7 +6,7 @@ Here is an example of how to set up a salt configuration system. It includes:
 
 - Bootstrapping script (via fabric)
 - Customizable configurations for different groups of systems
-   (ie - raspberrypi is separated from a different results)
+   (ie - raspberrypis are on a separate network to other systems)
 
 As well as a reference for some moderate tasks:
 
@@ -14,7 +14,7 @@ As well as a reference for some moderate tasks:
 - How to write your own modules
 - How to write your own states
 
-This currently only supports Debian / Ubuntu.
+This currently only supports Debian / Ubuntu. (I only have Ubuntu VMs right now...)
 
 ------------
 Installation
@@ -28,14 +28,20 @@ This configuration requires the following dependencies:
 .. _Python: http://python.org/
 .. _pip: http://www.pip-installer.org/en/latest/index.html
 
-Then install all the other dependencies::
+Then install all the other dependencies by doing::
 
     pip install -r requirements.txt
 
-Now you'll need to configure rename some sample files:
+Now you'll need to configure rename some sample files which have custom configurations:
 
-- copy bootstrapper/hosts_sample.py => bootstrapper/hosts.py and edit as appropriate for the hosts to connect.
-- copy configurations/yacs/pillars/passwords_sample.sls => configurations/yacs/pillars/passwords.sls and edit as appropriate. This is only for the yacs configuration (used in "How to use" section).
+- copy `bootstrapper/hosts_sample.py` => `bootstrapper/hosts.py` and edit as appropriate for the hosts you want to easily connect to.
+- copy `configurations/net.jeffhui.net/pillars/passwords_sample.sls` => `configurations/net.jeffhui.net/pillars/passwords.sls` and edit as appropriate. This is only for the yacs configuration (used in "How to use" section).
+- copy `configurations/net.jeffhui.net/states/top_sample.sls` => `configurations/net.jeffhui.net/pillars/top.sls` and edit as appropriate. This is only for the yacs configuration (used in "How to use" section).
+- copy `configurations/base/pillars/base/ksplice_sample.sls` => `configurations/base/pillars/base/ksplice.sls` and enter your ksplice key. This is used only if you want to have ksplice installed.
+
+The sample files can be quickly found using `find`::
+
+    find . -name '*_sample*'
 
 ----------
 How to use
@@ -45,29 +51,27 @@ Now you can do various `fabric`_ commands to manage basic deployments.
 
 Let's do a basic deploy using `fabric`_. First, we'll set up the salt master::
 
-    fab verbose include:yacs hosts.deploy_host setup_master
+    fab include:net.jeffhui.net roles:yacs deploy_host setup_master
 
 .. _fabric: http://docs.fabfile.org/en/1.4.3/index.html
 
 Let's break this command down:
 
-- ``verbose`` is purely optional, it reverts to the default state of fabric to output everything possible about what it's doing. Useful for debugging.
 - ``include:yacs`` tells fabric to include the configurations of the given name (yacs in this case). The base configuration is always included by default. Configurations are listed as subdirectories of configurations
-- ``hosts.deploy_hosts`` refers to the host to deploy to. They're specified in bootstrapper/hosts.py file. Alternatively, you can use '-H <hostname>' argument instead.
-- ``setup_master`` bootstraps salt master and salt minion (which points to itself).
+- ``deploy_host`` refers to the host to deploy to. They're specified in bootstrapper/hosts.py file. Alternatively, you can use '-H <hostname>' argument instead.
+- ``setup_master`` bootstraps salt master and salt minion (which points to itself) on the target host.
 
-Also, if you want also do an ``apt-get upgrade`` while bootstrapping, you can pass the upgrade=1 argument::
+Also, if you want skip an ``apt-get upgrade`` while bootstrapping, you can pass the upgrade=0 argument to setup_master::
 
-	fab include:yacs hosts.deploy_host setup_master:upgrade=1
+	fab include:net.jeffhui.net roles:yacs deploy_host setup_master:upgrade=0
 
-It will reboot as necessary after the upgrade.
 If you want to see all the detailed output, prefix with the ``verbose`` command::
 
-	fab include:yacs hosts.deploy_host setup_master
+	fab verbose include:net.jeffhui.net roles:yacs deploy_host setup_master
 
 All good? Let's deploy a salt minion on another machine::
 
-	fab hosts.deploy_client setup_minion_for_master:hosts.deploy_host,192.168.1.119
+	fab hosts.deploy_client setup_minion:deploy_host,192.168.1.119
 
 ``setup_minion_for_master`` requires two arguments:
 
