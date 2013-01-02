@@ -10,7 +10,11 @@
             []
             {% endfor %}
         {% endif %}
+        {% if 'gid' in user %}
         - gid: {{ user['gid'] }}
+        {% else %}
+        - gid_from_name: True
+        {% endif %}
         # - gid_from_name: {{ username }} # for develop branch
         - home: '/home/{{ username }}/'
         {% if not user.get('can_login', True) %}
@@ -26,6 +30,8 @@
             - user: '{{ username }}'
     {% endif %}
     group:
-        - gid: {{ user['gid'] }}
         - present
+        {% if 'gid' in user %}
+        - gid: {{ user['gid'] }}
+        {% endif %}
 {% endfor %}

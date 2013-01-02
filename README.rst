@@ -37,6 +37,7 @@ Now you'll need to configure rename some sample files which have custom configur
 - copy `bootstrapper/hosts_sample.py` => `bootstrapper/hosts.py` and edit as appropriate for the hosts you want to easily connect to.
 - copy `configurations/net.jeffhui.net/pillars/passwords_sample.sls` => `configurations/net.jeffhui.net/pillars/passwords.sls` and edit as appropriate. This is only for the yacs configuration (used in "How to use" section).
 - copy `configurations/net.jeffhui.net/states/top_sample.sls` => `configurations/net.jeffhui.net/pillars/top.sls` and edit as appropriate. This is only for the yacs configuration (used in "How to use" section).
+- copy `configurations/net.jeffhui.net/pillars/top_sample.sls` => `configurations/net.jeffhui.net/pillars/top.sls` and edit as appropriate. This is only for the yacs configuration (used in "How to use" section).
 - copy `configurations/base/pillars/base/ksplice_sample.sls` => `configurations/base/pillars/base/ksplice.sls` and enter your ksplice key. This is used only if you want to have ksplice installed.
 
 The sample files can be quickly found using `find`::
