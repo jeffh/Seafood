@@ -1,9 +1,9 @@
+{% set master = pillar['salt-master']['highstate'] %}
+{% set keys = ['minute', 'hour', 'daymonth', 'month', 'dayweek'] %}
 salt-master-highstate:
     cron.present:
         - name: "cd /opt/saltstack && echo '==============' >> /opt/saltstack/highstate.log && salt '*' state.highstate >> /opt/saltstack/highstate.log"
-        - user: root
-        {% if minute %}- minute: {{ minute }}{% endif %}
-        {% if hour %}- hour: {{ hour }}{% endif %}
-        {% if daymonth %}- daymonth: {{ daymonth }}{% endif %}
-        {% if month %}- month: {{ month }}{% endif %}
-        {% if dayweek %}- dayweek: {{ dayweek }}{% endif %}
+        - user: {{ ping.get('user', 'root') }}
+        {% for key in keys %}
+        {% if key in ping %}- {{ key }}: {{ ping[key] }}{% endif %}
+        {% endfor %}

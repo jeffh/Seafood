@@ -1,3 +1,3 @@
 git:
-    pkg:
+    package:
         - installed

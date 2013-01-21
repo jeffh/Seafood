@@ -1,3 +1,3 @@
 lsb-release:
-    pkg:
+    package:
         - installed

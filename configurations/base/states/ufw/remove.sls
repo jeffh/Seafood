@@ -1,5 +1,5 @@
 ufw:
-    pkg.purge:
+    package.purged:
         - require:
             cmd: ufw
     service.dead:

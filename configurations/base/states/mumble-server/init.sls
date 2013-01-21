@@ -1,10 +1,13 @@
+{% set ms = pillar.get('mumble-server', {}) %}
+{% set listen = ms.get('listen', '') %}
+{% set port = ms.get('port', 64738) %}
 mumble-server:
-    pkg:
+    package:
         - installed
     service.running:
         - sig: murmurd
         - watch:
-            - pkg: mumble-server
+            - package: mumble-server
             - file: /etc/mumble-server.ini
 
 '/etc/mumble-server.ini':
@@ -15,17 +18,17 @@ mumble-server:
         - template: jinja
         - mode: 640
         - defaults:
-            port: 64738
-            password:
-            welcometext: "<br />Welcome to this server running <b>Murmur</b>.<br />Enjoy your stay!<br />"
-            bandwidth: 72000
-            maxusers: 100
-            logdays: 31
-            name:
-            requirecert:
-            listen:
+            port: {{ port }}
+            password: {{ ms.get('password', '') }}
+            welcome_text: "{{ ms.get('welcome_text', "<br />Welcome to this server running <b>Murmur</b>.<br />Enjoy your stay!<br />")}}"
+            bandwidth: {{ ms.get('bandwidth', 72000) }}
+            maxusers: {{ ms.get('maxusers', 100) }}
+            logdays: {{ ms.get('logdays', 31) }}
+            name: {{ ms.get('name', '') }}
+            requirecert: {{ ms.get('requirecert', 'False') }}
+            listen: {{ listen }}
         - require:
-            - pkg: mumble-server
+            - package: mumble-server
 
 '/etc/monit/conf.d/mumble-server.conf':
     optional_file.managed:
@@ -35,9 +38,7 @@ mumble-server:
         - group: root
         - template: jinja
         - defaults:
-            listen:
-            port: 64738
+            listen: {{ listen }}
+            port: {{ port }}
+            service_name: {{ pillar['packages'].get('mumble-server', {}).get('service', 'mumble-server') }}
             pidfile: /var/run/mumble-server
-        - require:
-            - pkg: mumble-server
-            - file: /etc/mumble-server.ini

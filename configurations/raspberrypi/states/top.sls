@@ -4,17 +4,18 @@ base:
         - users
         - syslog
         - lsb-release
-        - nginx
         - monit
-        - python
-        - python.dev
-        - python.pip
-        - python.virtualenv
-        - mercurial
-        - git
+        - salt.minion
+        - tools.vim.default
+    'roles:git':
+        - match: grain
+        - gitolite
+        - gitolite.post-receive.email
     'os:(Ubuntu|Debian)':
         - match: grain_pcre
         - unattended-upgrades
-    master:
-        - match: nodegroup
-        - salt-master.highstate.hourly
+    'roles:salt-master':
+        - match: grain
+        - http-ping
+        - salt-master
+        - salt-master.highstate-cron

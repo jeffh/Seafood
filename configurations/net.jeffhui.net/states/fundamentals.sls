@@ -7,6 +7,7 @@ fundamentals:
         - template: jinja
         - defaults:
             name: fundamentals
+            listen: '[::]:80 default'
             upstream_servers:
               - host: localhost
                 port: 8001
@@ -23,7 +24,7 @@ fundamentals:
         - password: {{ pillar['passwords']['fundamentals_db'] }}
         - runas: postgres
         - require:
-            - pkg: postgresql
+            - package: postgresql
             - user: postgresql
             - group: postgresql
             - service: postgresql
@@ -31,7 +32,7 @@ fundamentals:
         - owner: fundamentals
         - runas: postgres
         - require:
-            - pkg: postgresql
+            - package: postgresql
             - user: postgresql
             - group: postgresql
             - service: postgresql
@@ -43,7 +44,7 @@ fundamentals:
         - group: www-data
         - mode: 755
         - require:
-            - pkg: nginx
+            - package: nginx
 
 /www/fundamentals:
     file.directory:

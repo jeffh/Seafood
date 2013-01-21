@@ -1,12 +1,12 @@
 ksplice:
-    pkg.purge:
+    package.purged:
         - name: uptrack
 
 
 '/etc/apt/sources.list.d/ksplice.list':
     file.absent:
         - require:
-            - pkg: ksplice
+            - package: ksplice
     cmd.run:
         - name: 'apt-get update'
         - onlyif: 'apt-cache policy | grep -E ksplice'
@@ -17,4 +17,4 @@ ksplice:
 '/etc/uptrack/uptrack.conf':
     file.absent:
         - require:
-            - pkg: ksplice
+            - package: ksplice

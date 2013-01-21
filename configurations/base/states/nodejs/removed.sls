@@ -1,7 +1,7 @@
 nodejs:
-    pkg:
+    package:
         - purged
 
 npm:
-    pkg:
+    package:
         - purged

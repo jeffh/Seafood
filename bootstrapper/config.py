@@ -2,7 +2,7 @@ import sys
 import os
 from StringIO import StringIO
 
-from fabric.api import task, env
+from fabric.api import task, env, sudo
 from fabric.state import output
 
 from bootstrapper.helpers import runner
@@ -12,8 +12,6 @@ output['everything'] = False
 output['user'] = True
 
 SALT_DIR = '/opt/salt/'
-MASTER_MINIONS_DIR = '/etc/salt/pki/master/minions/'
-MINION_KEY_PATH = '/etc/salt/pki/minion'
 CONFIG_DIR = os.path.abspath('configurations')
 env.configs = ['base']
 env.salt_bleeding = False
@@ -21,6 +19,23 @@ env.salt_roles = []
 
 runner.types['state'] = sys.stdout
 runner.types['action'] = sys.stdout
+
+def master_minions_dir():
+    "Returns the directory for the master's minion keys directory"
+    ver = tuple(map(int, sudo('salt-master --version | cut -f 2 -d " "').strip().split('.')))
+    if ver[0] == 0 and ver[1] < 11: # < 0.11.0
+        return '/etc/salt/pki/minions'
+    else:
+        return '/etc/salt/pki/master/minions'
+
+def minion_key_path():
+    "Returns the directory for hhe minion pub/priv key directory."
+    ver = tuple(map(int, sudo('salt-minion --version | cut -f 2 -d " "').strip().split('.')))
+    if ver[0] == 0 and ver[1] < 11: # < 0.11.0
+        return '/etc/salt/pki'
+    else:
+        return '/etc/salt/pki/minion'
+
 
 ############################# CONFIGURATION #########################    
 @task

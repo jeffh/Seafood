@@ -1,5 +1,5 @@
 mumble-server:
-    pkg:
+    package:
         - purged
     service.dead:
         - sig: murmurd

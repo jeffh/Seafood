@@ -1,5 +1,9 @@
+include:
+    - python
+    - python.dev
+
 virtualenv:
-    pkg.installed:
+    package.installed:
         - name: python-virtualenv
         - require:
-            - pkg: pip
+            - package: python

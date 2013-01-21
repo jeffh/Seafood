@@ -1,5 +1,8 @@
+include:
+    - python
+
 pip:
-    pkg.installed:
+    package.installed:
         - name: python-pip
         - require:
-            - pkg: python
+            - package: python

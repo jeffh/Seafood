@@ -9,6 +9,7 @@
         - group: root
         - template: jinja
         - defaults:
+            service_name: {{ pillar['packages'].get('salt-master', {}).get('service', 'salt-master') }}
             ports:
                 - {{ pillar['salt-master']['pub_port'] }}
                 - {{ pillar['salt-master']['ret_port'] }}

@@ -17,6 +17,7 @@ yacs:
         - group: root
         - template: jinja
         - defaults:
+            listen: '[::]:80 default'
             app_name: yacs
             upstream_servers:
               - host: localhost
@@ -34,7 +35,7 @@ yacs:
         - password: {{ pillar['passwords']['yacs_db'] }}
         - runas: postgres
         - require:
-            - pkg: postgresql
+            - package: postgresql
             - user: postgresql
             - group: postgresql
             - service: postgresql
@@ -42,7 +43,7 @@ yacs:
         - owner: yacs
         - runas: postgres
         - require:
-            - pkg: postgresql
+            - package: postgresql
             - user: postgresql
             - group: postgresql
             - service: postgresql
@@ -54,7 +55,7 @@ yacs:
         - group: www-data
         - mode: 755
         - require:
-            - pkg: nginx
+            - package: nginx
 
 /www/yacs:
     file.directory:

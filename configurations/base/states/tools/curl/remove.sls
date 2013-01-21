@@ -1,0 +1,3 @@
+curl:
+    package:
+        - purged

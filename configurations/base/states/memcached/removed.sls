@@ -1,11 +1,11 @@
 memcached:
-    pkg:
+    package:
         - purged
     service.dead:
         - enabled: false
 
 memcached_dev:
-    pkg:
+    package:
         - purged
 
 '/etc/memcached.conf':

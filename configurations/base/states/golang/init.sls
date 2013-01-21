@@ -1,3 +1,3 @@
 golang:
-    pkg:
+    package:
         - installed

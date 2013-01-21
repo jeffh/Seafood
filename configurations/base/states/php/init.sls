@@ -1,3 +1,3 @@
 php:
-    pkg.installed:
+    package.installed:
         - name: php5

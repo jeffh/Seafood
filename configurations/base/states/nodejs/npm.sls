@@ -1,4 +1,4 @@
 npm:
-    pkg.installed:
+    package.installed:
         - require:
-            - pkg: nodejs
+            - package: nodejs

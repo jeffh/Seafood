@@ -3,4 +3,4 @@ coffeescript:
         - unless: which coffee
         - name: npm install -g coffee-script
         - require:
-            - pkg: npm
+            - package: npm

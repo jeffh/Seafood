@@ -1,10 +1,10 @@
 memcached:
-    pkg:
+    package:
         - installed
     service.running:
         - enabled: true
         - watch:
-            - pkg: memcached
+            - package: memcached
             - file: /etc/memcached.conf
 
 '/etc/memcached.conf':
@@ -25,7 +25,7 @@ memcached:
             verbose: false
             logfile: /var/log/memcached.log
         - require:
-            - pkg: memcached
+            - package: memcached
 
 '/etc/monit/conf.d/memcached.conf':
     optional_file.managed:
@@ -41,4 +41,4 @@ memcached:
             listen: 127.0.0.1
             pidfile: /var/run/memcached.pid
         - require:
-            - pkg: memcached
+            - package: memcached

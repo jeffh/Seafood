@@ -1,11 +1,11 @@
 python:
-    pkg:
+    package:
         - purged
 
 pip:
-    pkg.purged:
+    package.purged:
         - name: python-pip
 
 virtualenv:
-    pkg.purged:
+    package.purged:
         - name: python-virtualenv

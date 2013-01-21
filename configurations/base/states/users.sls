@@ -15,7 +15,6 @@
         {% else %}
         - gid_from_name: True
         {% endif %}
-        # - gid_from_name: {{ username }} # for develop branch
         - home: '/home/{{ username }}/'
         {% if not user.get('can_login', True) %}
         - shell: /bin/nologin

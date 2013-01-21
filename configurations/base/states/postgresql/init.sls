@@ -1,24 +1,28 @@
-{% set version = '9.1' %}
-{% set gid = '401' %}
-
+{% set pg = pillar.get('postgres', {}) %}
+{% set version = pg.get('version', '9.1') %}
+{% set listen = pg.get('listen', 'localhost') %}
+{% set port = pg.get('port', 5432) %}
 postgresql:
-    pkg.installed:
+    package.installed:
         - name: postgresql-{{ version }}
     service.running:
         - enabled: true
         - watch:
-            - pkg: postgresql
+            - package: postgresql
+            - file: '/etc/postgresql/{{ version }}/main/*'
+        - require:
             - user: postgresql
             - group: postgresql
     user.present:
         - name: postgres
+        - gid_from_name: True
         - require:
             - group: postgresql
-            - pkg: postgresql
+            - package: postgresql
     group.present:
         - name: postgres
         - require:
-            - pkg: postgresql
+            - package: postgresql
 
 # monit file
 '/etc/monit/conf.d/postgresql.conf':
@@ -29,11 +33,11 @@ postgresql:
         - group: root
         - template: jinja
         - defaults:
-            listen: localhost
-            port: 5432
+            listen: {{ listen }}
+            port: {{ port }}
             pidfile: /var/run/postgresql/{{ version }}-main.pid
         - require:
-            - pkg: postgresql
+            - package: postgresql
 
 '/etc/postgresql/{{ version }}/main/':
     file.directory:
@@ -41,7 +45,7 @@ postgresql:
         - group: root
         - mode: 755
         - require:
-            - pkg: postgresql
+            - package: postgresql
 
 '/etc/postgresql/{{ version }}/main/postgresql.conf':
     file.managed:
@@ -50,30 +54,28 @@ postgresql:
         - mode: 644
         - template: jinja
         - source: salt://postgresql/conf/postgresql.conf
-# most of these parameters are in:
-# http://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server
+        # most of these parameters are in:
+        # http://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server
         - defaults:
             version: {{ version }}
-            listen: localhost
-            port: 5432
-            max_connections: 100
-            unix_socket: /var/run/postgresql
-            shared_buffers: 24MB # min = 128kB
-            temp_buffers: 8MB # min = 800kB
-            work_mem: 1MB # min = 64kB
-            maintenance_work_mem: 16MB
-            max_files_per_process: 1000 # min 25
-            effective_cache_size: 128MB
-            checkpoint_segments: 3
-            checkpoint_completion_target: 0.5
-            max_prepared_transactions: 0 # 0 = disable
-            wal_sync_method: '' # defaults to fdatasync for linux; otherwise fsync
-            wal_buffers: -1  # uses default, which is 1/32th of shared_buffers
-            default_statistics_target: 100
-            synchronous_commit: on
-            random_page_cost: 4.0
-        - watch_in:
-            - service: postgresql
+            listen: {{ listen }}
+            port: {{ port }}
+            max_connections: {{ pg.get('max_connections', 100) }}
+            unix_socket: {{ pg.get('unix_socket', '/var/run/postgresql') }}
+            shared_buffers: {{ pg.get('shared_buffers', '24MB') }}
+            temp_buffers: {{ pg.get('temp_buffers', '8MB') }}
+            work_mem: {{ pg.get('work_mem', '1MB') }}
+            maintenance_work_mem: {{ pg.get('maintenance_work_mem', '16MB') }}
+            max_files_per_process: {{ pg.get('max_files_per_process', 1000) }}
+            effective_cache_size: {{ pg.get('effective_cache_size', '128MB') }}
+            checkpoint_segments: {{ pg.get('checkpoint_segments', 3) }}
+            checkpoint_completion_target: {{ pg.get("checkpoint_completion_target", '0.5') }}
+            max_prepared_transactions: {{ pg.get('max_prepared_transactions', '0') }}
+            wal_sync_method: '{{ pg.get("wal_sync_method", "") }}'
+            wal_buffers: {{ pg.get('wal_buffers', '-1') }}
+            default_statistics_target: {{ pg.get('default_statistics_target', '100') }}
+            synchronous_commit: {{ pg.get('synchronous_commit', 'on') }}
+            random_page_cost: {{ pg.get('random_page_cost', '4.0') }}
         - require:
             - file: '/etc/postgresql/{{ version }}/main/'
 
@@ -84,8 +86,6 @@ postgresql:
         - mode: 644
         - template: jinja
         - source: salt://postgresql/conf/pg_ctl.conf
-        - watch_in:
-            - service: postgresql
         - require:
             - file: '/etc/postgresql/{{ version }}/main/'
 
@@ -96,8 +96,6 @@ postgresql:
         - mode: 644
         - template: jinja
         - source: salt://postgresql/conf/start.conf
-        - watch_in:
-            - service: postgresql
         - require:
             - file: '/etc/postgresql/{{ version }}/main/'
 
@@ -108,8 +106,6 @@ postgresql:
         - mode: 644
         - template: jinja
         - source: salt://postgresql/conf/environment
-        - watch_in:
-            - service: postgresql
         - require:
             - file: '/etc/postgresql/{{ version }}/main/'
 
@@ -120,8 +116,6 @@ postgresql:
         - mode: 644
         - template: jinja
         - source: salt://postgresql/conf/pg_hba.conf
-        - watch_in:
-            - service: postgresql
         - require:
             - file: '/etc/postgresql/{{ version }}/main/'
 
@@ -132,7 +126,5 @@ postgresql:
         - mode: 644
         - template: jinja
         - source: salt://postgresql/conf/pg_ident.conf
-        - watch_in:
-            - service: postgresql
         - require:
             - file: '/etc/postgresql/{{ version }}/main/'

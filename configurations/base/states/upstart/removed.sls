@@ -1,3 +1,3 @@
 upstart:
-    pkg:
-        - purge
+    package:
+        - purged

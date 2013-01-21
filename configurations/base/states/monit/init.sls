@@ -1,11 +1,11 @@
 monit:
-    pkg.installed:
+    package.installed:
         - order: 1
     service.running:
         - enabled: true
         - order: last
         - watch:
-            - pkg: monit
+            - package: monit
             - file: /etc/monit/monitrc
             - file: /etc/monit/conf.d/*
             
@@ -16,7 +16,7 @@ monit:
         - mode: 755
         - order: 1
         - require:
-            - pkg: monit
+            - package: monit
         
 '/etc/monit/conf.d/':
     file.directory:
@@ -25,7 +25,7 @@ monit:
         - mode: 755
         - order: 1
         - require:
-            - pkg: monit
+            - package: monit
             - file: '/etc/monit/'
 
 '/etc/monit/monitrc':
@@ -37,7 +37,7 @@ monit:
         - template: jinja
         - defaults:
             interval: 15 # seconds
-            interval_start_delay: 0 # seconds
+            interval_start_delay: '0' # seconds
             logfile: /var/log/monit.log
             idfile: /var/lib/monit/id
             statefile: /var/lib/monit/state
@@ -61,5 +61,5 @@ monit:
             #   - primary.server port 10243
             #   - localhost
         - require:
-            - pkg: monit
+            - package: monit
             - file: /etc/monit/

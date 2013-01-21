@@ -1,9 +1,9 @@
 nginx:
-    pkg:
+    package:
         - installed
     service.running:
         - watch:
-            - pkg: nginx
+            - package: nginx
             - file: '/etc/nginx/*'
 
 '/etc/monit/conf.d/nginx.conf':
@@ -14,8 +14,11 @@ nginx:
         - group: root
         - template: jinja
         - defaults:
-            http_port: 80
-            https_port: 443
+            service_name: {{ pillar['packages'].get('nginx', {}).get('service', 'nginx') }}
+            ports:
+                - number: 80
+                - number: 443
+                  ssl: True
             pidfile: /var/run/nginx.pid
 
 '/usr/share/nginx/www/':
@@ -24,13 +27,13 @@ nginx:
         - group: www-data
         - mode: 755
         - require:
-            - pkg: nginx
+            - package: nginx
             
 '/etc/nginx/sites-available':
     file:
         - absent
         - require:
-            - pkg: nginx
+            - package: nginx
             
 '/etc/nginx/':
     file.directory:
@@ -38,7 +41,7 @@ nginx:
         - group: root
         - file_mode: 755
         - require:
-            - pkg: nginx
+            - package: nginx
             
 '/etc/nginx/sites-enabled/':
     file.directory:
@@ -47,13 +50,13 @@ nginx:
         - file_mode: 644
         - dir_mode: 755
         - require:
-            - pkg: nginx
+            - package: nginx
             - file: /etc/nginx/
 
 '/etc/nginx/sites-enabled/default':
     file.absent:
         - require:
-            - pkg: nginx
+            - package: nginx
 
 
 '/etc/nginx/nginx.conf':
@@ -64,7 +67,7 @@ nginx:
         - template: jinja
         - mode: 644
         - require:
-            - pkg: nginx
+            - package: nginx
 
 '/etc/nginx/mime.types':
     file.managed:
@@ -73,4 +76,4 @@ nginx:
         - group: root
         - mode: 644
         - require:
-            - pkg: nginx
+            - package: nginx

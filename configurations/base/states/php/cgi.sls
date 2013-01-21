@@ -1,8 +1,8 @@
 php-cgi:
-    pkg.installed:
+    package.installed:
         - name: php5-cgi
         - require:
-            - pkg: nginx
+            - package: nginx
             - user: www-data
             - group: www-data
 
@@ -16,7 +16,7 @@ php-cgi:
             pidfile: /var/run/php-fcgi.pid
             phpcgi: /usr/bin/php-cgi
         - require:
-            - pkg: php-cgi
+            - package: php-cgi
 
 '/etc/monit/conf.d/php-cgi.conf':
     optional_file.managed:
@@ -32,4 +32,4 @@ php-cgi:
             group: www-data
         - require:
             - file: '/etc/init.d/php-cgi'
-            - pkg: php-cgi
+            - package: php-cgi

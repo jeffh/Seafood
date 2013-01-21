@@ -1,5 +1,5 @@
 ksplice:
-    pkg.installed:
+    package.installed:
         - name: uptrack
         - require:
             - cmd: '/etc/apt/sources.list.d/ksplice.list'
@@ -33,4 +33,4 @@ ksplice:
             install_on_reboot: {{ pillar['ksplice']['install_on_reboot']|default('yes') }}
             access_key: {{ pillar['ksplice']['key'] }}
         - require:
-            - pkg: ksplice
+            - package: ksplice

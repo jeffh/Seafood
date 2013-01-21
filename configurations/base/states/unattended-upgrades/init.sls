@@ -1,8 +1,8 @@
 unattended-upgrades:
-    pkg:
+    package:
         - installed
         - require:
-            - pkg: lsb-release
+            - package: lsb-release
 
 '/etc/apt/apt.conf.d/10periodic':
     file.managed:
@@ -11,7 +11,7 @@ unattended-upgrades:
         - group: root
         - chmod: 644
         - require:
-            - pkg: unattended-upgrades
+            - package: unattended-upgrades
 
 '/etc/apt/apt.conf.d/50unattended-upgrades':
     file.managed:
@@ -20,4 +20,4 @@ unattended-upgrades:
         - group: root
         - chmod: 644
         - require:
-            - pkg: unattended-upgrades
+            - package: unattended-upgrades

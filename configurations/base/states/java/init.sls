@@ -1,4 +1,3 @@
 java:
-    pkg:
+    package.installed:
         - name: openjdk-6-jre-headless
-        - installed

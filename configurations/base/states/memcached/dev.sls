@@ -1,3 +1,3 @@
-memcached_dev:
-    pkg.installed:
+memcached-dev:
+    package.installed:
         - name: libmemcached-dev

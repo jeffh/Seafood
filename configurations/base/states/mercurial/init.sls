@@ -1,3 +1,3 @@
 mercurial:
-    pkg:
+    package:
         - installed

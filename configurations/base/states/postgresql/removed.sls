@@ -1,5 +1,5 @@
 postgresql:
-    pkg:
+    package:
         - purged
         - require:
             - service: postgresql

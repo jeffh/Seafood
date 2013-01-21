@@ -99,7 +99,7 @@ class Apt(object):
         
     def remove(self, *pkgs):
         runner.state('Uninstall: {0}', ', '.join(pkgs))
-        return runner.sudo('apt-get remove -yq ' + ' '.join(pkgs))
+        return runner.sudo('apt-get remove -yq {0}; true'.format(' '.join(pkgs)))
         
     def clean(self):
         runner.state('Cleaning up...')
@@ -117,18 +117,6 @@ def find_pkgmgr():
         return Apt()
     raise TypeError("Could not determine operating system's package manager!")
 
-def silent(cmd, use_sudo=False):
-    """Performs operations silently (no output). Does not explode when running this command.
-
-    This is useful for checking for existance of things without blowing up on bad exit codes
-    (such as using which).
-    """
-    with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
-        if use_sudo:
-            return sudo(cmd)
-        else:
-            return run(cmd)
-
 def has(app, which='which %(app)s', use_sudo=True):
     "Returns true if the given binary exists. Uses which by default."
     return not runner.silent(which % {'app': app}, use_sudo=use_sudo).failed
@@ -141,19 +129,19 @@ def service(service, action):
     "Manages the execution of services."
     # bleeding edge deployment)
     if has('/opt/saltstack', which='test -e %(app)s', use_sudo=True):
-        if action == 'stop':
+        if 'stop' in action:
             runner.silent('pkill {0}'.format(service), use_sudo=True)
             time.sleep(1)
         elif action == 'start':
-            sudo('{0} -d'.format(service))
+            runner.sudo('{0} -d'.format(service))
         else:
             raise TypeError('Invalid service action: {0}'.format(action))
         return
     # normal deploy
     if has('service'):
-        sudo('service %s %s' % (service, action))
+        runner.sudo('service %s %s' % (service, action))
     else:
-        sudo('/etc/init.d/%s %s' % (service, action))
+        runner.sudo('/etc/init.d/%s %s' % (service, action))
 
 def requires_host(fn):
     """A decorator that checks if env.hosts is set before proceeding."""
@@ -191,6 +179,9 @@ def add_host(name, password=None, roles=None):
         return
     env.passwords[name] = password
 
+def boolean(string):
+    "Coerces a string value into a boolean, taking in to consideration standard yes value for strings."
+    return str(string).strip().lower() in ['true', 'yes', 'y', 't', 'yep', 'yeah', 'ok', '1']
 
 @task
 def clear():

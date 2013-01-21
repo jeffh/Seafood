@@ -8,7 +8,8 @@ from fabric.contrib import files
 
 from bootstrapper import lowlevel
 from bootstrapper.config import verbose
-from bootstrapper.helpers import puts, has, runner, requires_configuration, requires_host
+from bootstrapper.helpers import (puts, has, runner, requires_configuration,
+    requires_host, boolean)
 
 # expose this task
 hostname = lowlevel.hostname
@@ -19,9 +20,9 @@ hostname = lowlevel.hostname
 @requires_host
 def delete_salt():
     verbose()
-    runner.silent('apt-get purge salt-minion salt-master')
-    runner.silent('rm -rf /etc/salt /opt/salt /opt/saltstack /var/log/salt', use_sudo=True)
-    runner.silent('rm -f /usr/local/bin/salt-*', use_sudo=True)
+    find_pkgmgr().remove('salt-minion', 'salt-master')
+    sudo('rm -rf /etc/salt /opt/salt /opt/saltstack /var/log/salt; true')
+    sudo('rm -f /usr/local/bin/salt-*; true')
 
 @task
 @parallel
@@ -36,10 +37,15 @@ def reboot():
 @parallel
 @requires_host
 @requires_configuration
-def setup_master(and_minion=1, upgrade=1):
+def setup_master(and_minion=1, upgrade=0):
     """Bootstraps and sets up a master.
 
     Sets up a minion pointing to itself unless otherwise said.
+
+    Options:
+        and_minion: Set to 'no' to not install salt-minion.
+        upgrade:    Set to 'yes' to upgrade all system packages before
+                    installing salt.
     """
     lowlevel.bootstrap(upgrade)
     lowlevel.master()
@@ -63,8 +69,17 @@ def create_minion_key(hostname):
 @_roles('minion')
 @parallel
 @requires_host
-def setup_minion(fab_master, master, upgrade=1):
-    "Bootstraps and sets up a minion. Requires the ip address of the master."
+def setup_minion(fab_master, master, upgrade=0):
+    """Bootstraps and sets up a minion. Requires the ip address of the master.
+    
+    Options:
+        fab_master: The method for this machine (running fabric) to connect to the
+                    master. This can be specified as "-H <IPADDRESS>" or fabric
+                    task name
+        master:     The address for the minion to connect to the master.
+        upgrade:    Set to 'yes' to upgrade all the minion's packages before
+                    installing salt-minion
+    """
     name = hostname()
     local('fab {0} create_minion_key:{1}'.format(fab_master, repr(name)))
     lowlevel.bootstrap(upgrade)
@@ -75,26 +90,28 @@ def setup_minion(fab_master, master, upgrade=1):
 @parallel
 @requires_host
 @requires_configuration
-def deploy(filter='*', upload=1, debug=0):
+def deploy(filter='*', upload=1, sync=1, debug=0):
     """Tells master to send pillars and execute salt state files on clients.
 
-    If debug is set to true, runs locally with more debugging information output.
-    If upload is set to true, then uploads current salt configurations to the master before deploying.
+    If debug is set to 'yes', runs locally with more debugging information output.
+    If upload is set to 'yes', then uploads current salt configurations to the master before deploying.
     """
     runner.action('Deploying salt files')
     output = ''
     with runner.with_prefix('  '):
         if has('/opt/saltstack/', 'test -e %(app)s'):
             lowlevel.upgrade_bleeding()
-        if int(upload):
+        if boolean(upload):
             lowlevel.upload()
-        if int(debug):
-            cmd = "salt-call state.highstate -l debug"
-        else:    
-            cmd = "salt '{0}' state.highstate".format(filter)
-        runner.action('Ensuring minion state')
-        with show('stdout', 'stderr'):
-            out = runner.sudo(cmd, combine_stderr=True)
-        with open('sync.log', 'w+') as handle:
-            handle.write(out)
+        if boolean(sync):
+            if boolean(debug):
+                cmd = "salt-call state.highstate -l debug"
+            else:    
+                cmd = "salt '{0}' state.highstate".format(filter)
+            runner.action('Ensuring minion state')
+            with show('stdout', 'stderr'):
+                out = runner.sudo(cmd, combine_stderr=True)
+            with open('sync.log', 'w+') as handle:
+                handle.write(out)
+            runner.action('Wrote output to sync.log')
 

@@ -9,6 +9,7 @@
         - group: root
         - template: jinja
         - defaults:
+            service_name: {{ pillar['packages'].get('salt-minion', {}).get('service', 'salt-minion') }}
             pidfile: /var/run/salt-minion.pid
         - require:
-            - pkg: monit
+            - package: monit

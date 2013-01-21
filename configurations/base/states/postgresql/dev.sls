@@ -1,4 +1,4 @@
 postgresql-dev:
-    pkg.installed:
+    package.installed:
         - name: libpq-dev
 

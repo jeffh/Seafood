@@ -1,3 +1,3 @@
 python:
-    pkg:
+    package:
         - installed

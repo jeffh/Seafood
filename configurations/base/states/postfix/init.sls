@@ -1,9 +1,9 @@
 postfix:
-    pkg:
+    package:
         - installed
     service.running:
         - watch:
-            - pkg: postfix
+            - package: postfix
             - file: '/etc/postfix/*'
 
 {% set files = ['main.cf', 'master.cf', 'dynamicmaps.cf', 'postfix-files', 'postfix-script'] %}
@@ -19,5 +19,5 @@ postfix:
         - defaults:
             system_mail_name: deploy-host
         - require:
-            - pkg: postfix
+            - package: postfix
 {% endfor %}

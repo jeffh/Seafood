@@ -2,9 +2,7 @@
 def _set_variables(variables, path='/etc/environment'):
     env_vars = dict(__salt__['environment.read'](path))
     diff = dict((n, v) for n, v in variables.items() if n not in env_vars or env_vars[n] != v)
-    print 'BEFORE:', env_vars
     env_vars.update(diff)
-    print 'AFTER:', env_vars
     
     if diff:
         __salt__['environment.write'](env_vars.items(), path)
@@ -56,7 +54,7 @@ def unset(name, variables, path='/etc/environment'):
     name
         Does nothing. Simply for reference.
     variables
-        A list of dictionaries or a dictionary of variables to set.
+        A list of variables to unset.
     path
         The file to write to. Defaults to /etc/environment
     """

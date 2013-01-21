@@ -1,11 +1,11 @@
 syslog:
-    pkg.installed:
+    package.installed:
         - name: rsyslog
     service.running:
         - name: rsyslog
         - enable: true
         - watch:
-            - pkg: syslog
+            - package: syslog
             - file: '/etc/rsyslog.d/*'
     
 '/etc/rsyslog.d/':
@@ -14,4 +14,4 @@ syslog:
         - group: root
         - mode: 644
         - require:
-            - pkg: syslog
+            - package: syslog
