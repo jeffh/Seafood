@@ -9,6 +9,9 @@ def _load_pkg():
     return pkg
 
 def installed(name, **kwargs):
+    """Identical to pkg.installed, except parameters specified here
+    can be overridden by pillar['packages'][name] data.
+    """
     kwargs['name'] = name
     kwargs.update(__pillar__['packages'].get(name, {}))
     name = kwargs.pop('name')
@@ -23,6 +26,9 @@ def installed(name, **kwargs):
 
 
 def purged(name, **kwargs):
+    """Identical to pkg.purged, except parameters specified here
+    can be overriden by pillar['packages'][name] data.
+    """
     kwargs['name'] = name
     kwargs.update(__pillar__['packages'].get(name, {}))
     pkg = _load_pkg()

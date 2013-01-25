@@ -4,7 +4,7 @@ def _set_variables(variables, path='/etc/environment'):
     diff = dict((n, v) for n, v in variables.items() if n not in env_vars or env_vars[n] != v)
     env_vars.update(diff)
     
-    if diff:
+    if diff and not __opts__['test']:
         __salt__['environment.write'](env_vars.items(), path)
     return diff
 
@@ -17,7 +17,7 @@ def _unset_variables(var_names, path='/etc/environment'):
             del env_vars[n]
             diff.append(n)
     
-    if diff:
+    if diff and not __opts__['test']:
         __salt__['environment.write'](env_vars.items(), path)
     return diff
 

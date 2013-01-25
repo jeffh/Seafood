@@ -22,6 +22,7 @@ base:
         - nodejs.coffeescript
         - postgresql
         - postgresql.dev
+        - elasticsearch
         - java
         - python
         - python.dev

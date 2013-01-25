@@ -7,9 +7,8 @@ operations have conditional-based execution.
 def _run_check(onlyif, unless, user, env):
     kwargs = {
         'runas': user,
-        'env': env,
+        'env': env or (),
     }
-    kwargs['env'] = kwargs['env'] or ()
     if onlyif:
         retcode = __salt__['cmd.retcode'](onlyif, **kwargs)
         if retcode != 0:

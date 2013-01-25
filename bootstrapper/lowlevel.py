@@ -5,7 +5,7 @@ import sys
 import time
 
 from fabric.api import (reboot, env, sudo, runs_once, local,
-    settings, cd, run, roles, get, put, parallel, task)
+    settings, cd, run, roles, get, put, task)
 from fabric.contrib import files
 from fabric.contrib.project import upload_project
 from fabric import operations
@@ -27,8 +27,15 @@ def upgrade_all_packages():
 def convert_to_bleeding():
     "Converts the master installation to bleeding edge."
     runner.action('Convert Salt to bleeding edge')
+    if runner.silent('test -d /opt/saltstack', use_sudo=True):
+        runner.state('Already installed.')
+        return
     with runner.with_prefix(' ~> '):
         pkgmgr = find_pkgmgr()
+        pkgmgr.install('python')
+        pkgmgr.install('python-dev')
+        pkgmgr.install('python-pip')
+        sudo('yes | pip install pyzmq PyYAML pycrypto msgpack-python jinja2 psutil')
         pkgmgr.install('salt-common')
         runner.silent('pkill salt-master', use_sudo=True)
         runner.silent('pkill salt-minion', use_sudo=True)
@@ -114,17 +121,11 @@ def minion(master, hostname, roles=()):
         pkgmgr = find_pkgmgr()
         pkgmgr.install('salt-minion')
 
-        if env.salt_bleeding:
-            convert_to_bleeding()
-            time.sleep(1)
-            service('salt-minion', 'start')
-
         upload_minion_key(hostname)
         upload_minion_config(master, roles)
 
 
 @task
-@parallel
 @requires_host
 def hostname(name='', fqdn=True):
     "Gets or sets the machine's hostname"
@@ -185,9 +186,6 @@ def master():
     runner.action('Set up master daemon')
     with runner.with_prefix(' ~> '):
         find_pkgmgr().install('salt-master')
-        if env.salt_bleeding:
-            convert_to_bleeding()
-            service('salt-master', 'start')
         upload_master_config()
 
 

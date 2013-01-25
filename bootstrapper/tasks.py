@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 from fabric.api import local, sudo, task, parallel, show, env
 from fabric.api import roles as _roles
@@ -9,7 +10,7 @@ from fabric.contrib import files
 from bootstrapper import lowlevel
 from bootstrapper.config import verbose
 from bootstrapper.helpers import (puts, has, runner, requires_configuration,
-    requires_host, boolean)
+    requires_host, boolean, service)
 
 # expose this task
 hostname = lowlevel.hostname
@@ -34,7 +35,6 @@ def reboot():
 
 @task
 @_roles('master')
-@parallel
 @requires_host
 @requires_configuration
 def setup_master(and_minion=1, upgrade=0):
@@ -50,11 +50,19 @@ def setup_master(and_minion=1, upgrade=0):
     lowlevel.bootstrap(upgrade)
     lowlevel.master()
     lowlevel.upload(sync=False)
-    if int(and_minion):
+    if boolean(and_minion):
         name = hostname()
         roles = ['salt-master'] + list(env.salt_roles)
         lowlevel.create_minion_key(name)
         lowlevel.minion(master='127.0.0.1', hostname=name, roles=roles)
+    
+    
+    if env.salt_bleeding:
+        lowlevel.convert_to_bleeding()
+        time.sleep(1)
+        if boolean(and_minion):
+            service('salt-minion', 'start')
+        service('salt-master', 'start')
 
 
 @task
@@ -67,7 +75,6 @@ def create_minion_key(hostname):
 
 @task
 @_roles('minion')
-@parallel
 @requires_host
 def setup_minion(fab_master, master, upgrade=0):
     """Bootstraps and sets up a minion. Requires the ip address of the master.
@@ -85,9 +92,13 @@ def setup_minion(fab_master, master, upgrade=0):
     lowlevel.bootstrap(upgrade)
     lowlevel.minion(master, name, env.salt_roles)
 
+    if env.salt_bleeding:
+        lowlevel.convert_to_bleeding()
+        time.sleep(1)
+        service('salt-minion', 'start')
+
 
 @task
-@parallel
 @requires_host
 @requires_configuration
 def deploy(filter='*', upload=1, sync=1, debug=0):
@@ -99,8 +110,8 @@ def deploy(filter='*', upload=1, sync=1, debug=0):
     runner.action('Deploying salt files')
     output = ''
     with runner.with_prefix('  '):
-        if has('/opt/saltstack/', 'test -e %(app)s'):
-            lowlevel.upgrade_bleeding()
+        # if has('/opt/saltstack/', 'test -e %(app)s'):
+        #     lowlevel.upgrade_bleeding()
         if boolean(upload):
             lowlevel.upload()
         if boolean(sync):

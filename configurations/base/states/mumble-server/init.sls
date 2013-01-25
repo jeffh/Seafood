@@ -1,6 +1,3 @@
-{% set ms = pillar.get('mumble-server', {}) %}
-{% set listen = ms.get('listen', '') %}
-{% set port = ms.get('port', 64738) %}
 mumble-server:
     package:
         - installed
@@ -10,6 +7,9 @@ mumble-server:
             - package: mumble-server
             - file: /etc/mumble-server.ini
 
+{% set ms = pillar.get('mumble-server', {}) %}
+{% set listen = ms.get('listen', '') %}
+{% set port = ms.get('port', 64738) %}
 '/etc/mumble-server.ini':
     file.managed:
         - source: salt://mumble-server/mumble-server.ini

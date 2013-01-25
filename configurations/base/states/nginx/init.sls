@@ -17,8 +17,7 @@ nginx:
             service_name: {{ pillar['packages'].get('nginx', {}).get('service', 'nginx') }}
             ports:
                 - number: 80
-                - number: 443
-                  ssl: True
+                  ssl: False
             pidfile: /var/run/nginx.pid
 
 '/usr/share/nginx/www/':

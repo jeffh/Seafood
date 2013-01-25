@@ -7,7 +7,6 @@ salt-master-highstate:
     file:
         - absent
 
-
 '/etc/ufw/applications.d/salt-master':
     file:
         - absent

@@ -13,5 +13,5 @@ golang_from_source:
         - unless: which go
         - require:
             - package: mercurial
-            - file: golang_from_source
+            - environment: golang_from_source
             
