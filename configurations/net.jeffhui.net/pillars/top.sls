@@ -13,7 +13,6 @@ base:
         - base.gitolite
     'roles:yacs':
         - match: grain
-        - base.elasticsearch
         - yacs.passwords
     'os:(Ubuntu|Debian)':
         - match: grain_pcre

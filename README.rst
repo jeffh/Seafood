@@ -94,6 +94,15 @@ What does this do?
 - Uploads all the pillars and salts to the deploy_host (our master) from the base configuration and yacs configuration.
 - Runs ``salt '*' state.highstate`` on the master - this propagates all the changes directly to all minions (including itself).
 
+-----------------
+External Packages
+-----------------
+
+Some packages are not in the system repositories. For example, `elasticsearch`.
+Using `packages.json`, the packages can be downloaded without being tracked
+in the repository. For salt to use these files, they're specified in the
+packages.sls pillar.
+
 -----------
 Development
 -----------

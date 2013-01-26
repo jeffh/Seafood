@@ -1,7 +1,7 @@
 """
 optional_files - handles the management of optional files.
 
-This should be like the salt.states.file module, except that all its
+This is like the salt.states.file module, except that all its
 operations have conditional-based execution.
 """
 def _run_check(onlyif, unless, user, env):

@@ -1,14 +1,3 @@
-include:
-    - sshd
-
-extend:
-    '/etc/ssh/sshd_config':
-        file.managed:
-            - context:
-                port: 22
-                root_can_login: true
-                allow_password_auth: true
-
 yacs:
     file.managed:
         - name: /etc/nginx/sites-enabled/yacs
