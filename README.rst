@@ -62,9 +62,9 @@ Let's break this command down:
 - ``deploy_host`` refers to the host to deploy to. They're specified in bootstrapper/hosts.py file. Alternatively, you can use '-H <hostname>' argument instead.
 - ``setup_master`` bootstraps salt master and salt minion (which points to itself) on the target host.
 
-Also, if you want skip an ``apt-get upgrade`` while bootstrapping, you can pass the upgrade=0 argument to setup_master::
+Also, if you want to ``apt-get upgrade`` while bootstrapping, you can pass the upgrade=1 argument to setup_master::
 
-	fab include:net.jeffhui.net roles:yacs deploy_host setup_master:upgrade=0
+	fab include:net.jeffhui.net roles:yacs deploy_host setup_master:upgrade=1
 
 If you want to see all the detailed output, prefix with the ``verbose`` command::
 
@@ -76,8 +76,8 @@ All good? Let's deploy a salt minion on another machine::
 
 ``setup_minion_for_master`` requires two arguments:
 
-- The **fabric argument** that refers to the master that our machine can connect to. If you want to use the -H flag, surround it in quotes: ``setup_minion_for_master:'-H 192.168.1.119',192.168.1.119``
-- The ip address that minion will use to connect to the master.
+- The **fabric argument** that refers to the master that our machine can connect to. If you want to use the fabric -H flag, surround it in quotes: ``setup_minion_for_master:'-H 192.168.1.119',192.168.1.119``
+- The ip address that the minion will use to connect to the master.
 
 This command actually is several commands:
 
@@ -93,6 +93,10 @@ What does this do?
 
 - Uploads all the pillars and salts to the deploy_host (our master) from the base configuration and yacs configuration.
 - Runs ``salt '*' state.highstate`` on the master - this propagates all the changes directly to all minions (including itself).
+
+And that's it! You can look around and create your own configurations to tinker
+around with salt. Generally, all the shared states go in 'base', where system
+group specific configurations are in their own directories.
 
 -----------------
 External Packages
