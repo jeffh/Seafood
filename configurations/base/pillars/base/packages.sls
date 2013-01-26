@@ -1,6 +1,6 @@
 # this is the command to use when an application wants to restart a service
 # (ie - monit configs)
-service: '/etc/sbin/service'
+service: '/usr/sbin/service'
 
 packages:
     # the keys here are named after the states that define them
