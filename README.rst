@@ -103,6 +103,15 @@ Using `packages.json`, the packages can be downloaded without being tracked
 in the repository. For salt to use these files, they're specified in the
 packages.sls pillar.
 
+The packages can be download by running::
+
+    fab download_packages
+
+Which will download the first package it finds in each group. If you prefer to
+download all versions use::
+
+    fab download_packages:everything=True
+
 -----------
 Development
 -----------

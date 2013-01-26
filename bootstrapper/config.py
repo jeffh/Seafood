@@ -112,7 +112,7 @@ def download_package(url, path, md5hash, configuration='base'):
     except ImportError:
         raise ImportError("requests library missing. Did you forget to 'pip install -r requirements.txt'?")
     path = os.path.abspath(os.path.join('configurations', configuration, 'states', 'packages', path))
-    parent = os.path.basename(path)
+    parent = os.path.dirname(path)
     if not os.path.isdir(parent):
         os.makedirs(parent)
     
@@ -139,13 +139,13 @@ def download_package(url, path, md5hash, configuration='base'):
     assert wrapper.hexdigest() == md5hash, message
 
 @task
-def download_package_files(latest_only=True):
+def download_packages(everything=False):
     "Downloads all the package files for seafood states"
     with open('packages.json', 'r') as handle:
         data = json.loads(handle.read())
     for conf_name, config in data.items():
         for name, packages in config.items():
-            if boolean(latest_only):
+            if not boolean(everything):
                 packages = [packages[0]]
             for package in packages:
                 download_package(
