@@ -52,25 +52,25 @@ def _rules_from_protocol(proto):
         http=[
             'INPUT -p tcp --sport 80 -j ACCEPT',
             'OUTPUT -p tcp --dport 80 -j ACCEPT',
-        ]
+        ],
         https=[
             'INPUT -p tcp --sport 443 -j ACCEPT',
             'OUTPUT -p tcp --dport 443 -j ACCEPT',
-        ]
+        ],
         dns=[
             'INPUT -p udp --sport 53 -j ACCEPT',
             'INPUT -p tcp --sport 53 -j ACCEPT',
             'OUTPUT -p udp --dport 53 -j ACCEPT',
             'OUTPUT -p tcp --dport 53 -j ACCEPT',
-        ]
+        ],
         ssh=[
             'INPUT -p tcp --sport 22 -j ACCEPT',
             'OUTPUT -p tcp --dport 22 -j ACCEPT',
-        ]
+        ],
         rsync=[
             'INPUT -p tcp --dport 873 -j ACCEPT',
             'OUTPUT -p tcp --dport 873 -j ACCEPT',
-        ]
+        ],
         ping=[
             # receiving pings
             'INPUT -p icmp --icmp-type echo-request -j ACCEPT',

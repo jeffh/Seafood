@@ -210,7 +210,7 @@ def salt_config_context(roles=(), **kwargs):
     })
     return kwargs
 
-
+@task
 @roles('master')
 def upload_master_config():
     "Uploads master config to the remote server and restarts the salt-master."
@@ -223,7 +223,7 @@ def upload_master_config():
     service('salt-master', 'start')
 
 
-
+@task
 @roles('minion')
 def upload_minion_config(master, roles=()):
     "Uploads the minion config to the remote server and restarts the salt-minion."

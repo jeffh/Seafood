@@ -115,9 +115,12 @@ def deploy(filter='*', upload=1, sync=1, debug=0):
         if boolean(upload):
             lowlevel.upload()
         if boolean(sync):
+            runner.action('Syncing dynamic modules...')
+            runner.sudo("salt '{0}' saltutil.sync_all".format(filter), combine_stderr=True)
+
             if boolean(debug):
                 cmd = "salt-call state.highstate -l debug"
-            else:    
+            else:
                 cmd = "salt '{0}' state.highstate".format(filter)
             runner.action('Ensuring minion state')
             with show('stdout', 'stderr'):

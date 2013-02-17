@@ -11,6 +11,8 @@ def _load_pkg():
 def installed(name, **kwargs):
     """Identical to pkg.installed, except parameters specified here
     can be overridden by pillar['packages'][name] data.
+
+    If version kwarg is 'latest', then uses pkg.latest.
     """
     kwargs['name'] = name
     kwargs.update(__pillar__['packages'].get(name, {}))
