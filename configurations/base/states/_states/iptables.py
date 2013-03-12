@@ -85,7 +85,7 @@ class _iptables(object):
     def __init__(self, name, table):
         self.table = table
         self.name = name
-        self.result = {'changes': {'add': [] 'policies': {}},
+        self.result = {'changes': {'add': [], 'policies': {}},
                        'comment': '',
                        'name': name,
                        'result': True}

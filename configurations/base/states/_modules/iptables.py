@@ -9,17 +9,7 @@ import os
 import sys
 
 # Import salt libs
-import salt.utils
 from salt.exceptions import SaltException
-
-
-def __virtual__():
-    '''
-    Only load the module if iptables is installed
-    '''
-    if salt.utils.which('iptables'):
-        return 'iptables'
-    return False
 
 
 def _conf():

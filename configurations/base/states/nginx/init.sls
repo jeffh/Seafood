@@ -5,6 +5,14 @@ nginx:
         - watch:
             - package: nginx
             - file: '/etc/nginx/*'
+    user.present:
+        - name: www-data
+        - gid_from_name: True
+        - require:
+            - group: nginx
+    group.present:
+        - name: www-data
+
 
 '/etc/monit/conf.d/nginx.conf':
     optional_file.managed:
@@ -26,6 +34,8 @@ nginx:
         - group: www-data
         - mode: 755
         - require:
+            - user: www-data
+            - group: www-data
             - package: nginx
             
 '/etc/nginx/sites-available':

@@ -1,28 +1,17 @@
 import json
-import shutil
-import sys
 import os
-import urllib2
-import hashlib
-from StringIO import StringIO
 
 from fabric.api import task, env, sudo
 from fabric.state import output
 
-from bootstrapper.helpers import runner, boolean
-
-# set fabric's default verbosity to be a minimal.
-output['everything'] = False
-output['user'] = True
+from bootstrapper.helpers import boolean, download
 
 SALT_DIR = '/opt/salt/'
 CONFIG_DIR = os.path.abspath('configurations')
 env.configs = ['base']
 env.salt_bleeding = False
 env.salt_roles = []
-
-runner.types['state'] = sys.stdout
-runner.types['action'] = sys.stdout
+env.salt_bootstrap = 'https://raw.github.com/jeffh/salt-bootstrap/develop/bootstrap-salt.sh'
 
 def master_minions_dir():
     "Returns the directory for the master's minion keys directory"
@@ -69,89 +58,45 @@ def roles(*args):
 
 
 @task
-def verbose():
-    """Re-enables fabric's verbosity."""
-    output['everything'] = True
-    runner.types['state'] = runner.types['action'] = StringIO()
-    runner.types['ALL'] = sys.stdout
+def develop(ref='develop'):
+    "Makes salt deployments use bleeding edge or a given ref."
+    env.salt_bleeding = ref
 
 
-@task
-def quiet():
-    "Suppresses most output."
-    output['everything'] = False
-    output['user'] = True
-    runner.types['cmd'] = runner.types['state'] = runner.types['ALL'] = StringIO()
-    runner.types['action'] = sys.stdout
-
-@task
-def develop(repo='git://github.com/saltstack/salt.git'):
-    "Makes salt deployments use git repository."
-    env.salt_bleeding = repo
-
-
-class HashStreamWrapper(object):
-    def __init__(self, stream, hash):
-        self.stream, self.hash = stream, hash
-        
-    def read(self, size):
-        content = self.stream.read(size)
-        self.hash.update(content)
-        return content
-    
-    def hexdigest(self):
-        return self.hash.hexdigest()
-
-
-def download_package(url, path, md5hash, configuration='base'):
+def download_package(url, path, md5hash):
     """
     Downloads the given package into the configuration system (to test out)
     """
-    try:
-        import requests
-    except ImportError:
-        raise ImportError("requests library missing. Did you forget to 'pip install -r requirements.txt'?")
-    path = os.path.abspath(os.path.join('configurations', configuration, 'states', 'packages', path))
-    parent = os.path.dirname(path)
-    if not os.path.isdir(parent):
-        os.makedirs(parent)
-    
-    if os.path.exists(path):
-        hasher = hashlib.md5()
-        with open(path, 'r') as h:
-            content = h.read(10)
-            while content:
-                hasher.update(content)
-                content = h.read(10)
-        if hasher.hexdigest() == md5hash:
-            print '[{0}]'.format(configuration), ' OK', url
-            return 
-
-    with open(path, 'w+') as h:
-        resp = requests.get(url, stream=True)
-        wrapper = HashStreamWrapper(resp.raw, hashlib.md5())
-        shutil.copyfileobj(wrapper, h)
-    message = 'Expected md6 hash {0} to be equal to expected hash {1}'.format(
-        repr(wrapper.hexdigest()),
-        repr(md5hash),
-    )
+    path = package_path(path, configuration)
     print '[{0}]'.format(configuration), 'GET', url
-    assert wrapper.hexdigest() == md5hash, message
+    print '       =>', rel_package_path(path)
+    download(url, path, md5hash)
+
 
 @task
-def download_packages(everything=False):
-    "Downloads all the package files for seafood states"
-    with open('packages.json', 'r') as handle:
+def remove_external_files():
+    "Removes all downloaded packages"
+    with open('external_files.json', 'r') as handle:
         data = json.loads(handle.read())
-    for conf_name, config in data.items():
-        for name, packages in config.items():
-            if not boolean(everything):
-                packages = [packages[0]]
-            for package in packages:
-                download_package(
-                    url=package['url'],
-                    path=package['path'],
-                    md5hash=package['md5'],
-                    configuration=conf_name,
-                )
+    for name, packages in data.items():
+        for package in packages:
+            path = os.path.abspath(package['path'])
+            if os.path.exists(path):
+                print package['path']
+                os.unlink(path)
+
+
+@task
+def download_external_files(everything=False):
+    "Downloads all the package files for seafood states"
+    with open('external_files.json', 'r') as handle:
+        data = json.loads(handle.read())
+    for name, packages in data.items():
+        if not boolean(everything):
+            packages = [packages[0]]
+        for package in packages:
+            print name, '=>', package['path']
+            path = os.path.abspath(package['path'])
+            download(package['url'], path, package['md5'])
     print 'Done'
+

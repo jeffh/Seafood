@@ -1,0 +1,16 @@
+{
+    "elasticsearch": [
+        {
+            "url": "http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.20.3.deb",
+            "path": "configurations/base/states/external_files/elasticsearch/0.20.3.deb",
+            "md5": "3d9a27d6e641ef8a3cca68415ea5479e"
+        }
+    ],
+    "jenkins-ci.org.key": [
+        {
+            "url": "http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key",
+            "path": "configurations/base/states/external_files/jenkins/jenkins-ci.org.key",
+            "md5": "9fa06089848262c5a6383ec27fdd2575"
+        }
+    ]
+}

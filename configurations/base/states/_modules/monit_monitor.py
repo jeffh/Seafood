@@ -7,6 +7,7 @@ import urlparse
 from collections import defaultdict
 
 from salt.modules.service import grainmap
+from salt.utils import which
 
 # for monit, if is a noise keyword
 # but parsing will be easier for use if we parse 'if's
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 def __virtual__():
-    if __salt__['cmd.has_exec']('monit'):
+    if which('monit'):
         return 'monitor'
     return False
 

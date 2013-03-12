@@ -7,108 +7,77 @@ import time
 from fabric.api import (reboot, env, sudo, runs_once, local,
     settings, cd, run, roles, get, put, task)
 from fabric.contrib import files
-from fabric.contrib.project import upload_project
 from fabric import operations
 
-from bootstrapper.helpers import (runner, requires_configuration, requires_host,
-    is_distro, puts, find_pkgmgr, service, boolean)
+from bootstrapper.helpers import *
 from bootstrapper.config import CONFIG_DIR, SALT_DIR, master_minions_dir, minion_key_path
 
 
+purge_salt = Dispatcher('purge_salt',
+    dispatch=has,
+    doc="Removes all salt files from the remote system"
+)
+
+@purge_salt.register('apt-get')
+def purge_salt_with_apt():
+    apt_remove('salt-master', 'salt-minion', 'salt-common')
+    silent_remove('/etc/salt', '/opt/salt', '/opt/saltstack', '/var/log/salt')
+    silent_remove('/usr/local/bin/salt-*')
 
 
-def upgrade_all_packages():
-    "Updates all packages"
-    find_pkgmgr().upgrade()
-    reboot_if_required()
+@purge_salt.before
+def purge_salt_files():
+    silent_remove('/etc/salt/')
+    silent_remove('/opt/salt/')
 
 
-
-def convert_to_bleeding():
-    "Converts the master installation to bleeding edge."
-    runner.action('Convert Salt to bleeding edge')
-    if runner.silent('test -d /opt/saltstack', use_sudo=True):
-        runner.state('Already installed.')
-        return
-    with runner.with_prefix(' ~> '):
-        pkgmgr = find_pkgmgr()
-        pkgmgr.install('python')
-        pkgmgr.install('python-dev')
-        pkgmgr.install('python-pip')
-        sudo('yes | pip install pyzmq PyYAML pycrypto msgpack-python jinja2 psutil')
-        pkgmgr.install('salt-common')
-        runner.silent('pkill salt-master', use_sudo=True)
-        runner.silent('pkill salt-minion', use_sudo=True)
-        time.sleep(1)
-        pkgmgr.remove('salt-master')
-        pkgmgr.remove('salt-minion')
-        pkgmgr.install('git-core')
-        runner.silent('rm -rf /opt/saltstack', use_sudo=True)
-        runner.silent('mkdir /opt', use_sudo=True)
-        with cd('/opt'):
-            sudo('git clone {0} {1}'.format(env.salt_bleeding, 'saltstack'))
-        with cd('/opt/saltstack/'):
-            sudo('python setup.py install')
+@task
+def upload_key(local_key='~/.ssh/id_rsa.pub'):
+    "Uploads the provided local key to the remote server."
+    local_key = os.path.expandvars(os.path.expanduser(local_key))
+    user = env.user
+    home = silent_sudo('pwd').strip()
+    ssh_dir = os.path.join(home, '.ssh')
+    with settings(warn_only=True):
+        mkdir(ssh_dir)
+    chmod(777, ssh_dir)
+    with open(local_key) as handle:
+        files.append(os.path.join(ssh_dir, 'authorized_keys'), handle.read())
+    chmod(700, ssh_dir)
+    chown(user, ssh_dir)
+    chgrp(user, ssh_dir)
 
 
-
-def upgrade_bleeding():
-    "Upgrades the bleeding edge and reinstall it."
-    runner.action('Upgrade bleeding edge salt installation')
-    with runner.with_prefix(' ~> '):
-        service('salt-master', 'stop')
-        service('salt-minion', 'stop')
-        time.sleep(1)
-        with cd('/opt/saltstack/'):
-            sudo('git pull origin master')
-            sudo('python setup.py install')
-            service('salt-master', 'start')
-            service('salt-minion', 'start')
-
-
-def bootstrap_with_aptget(upgrade):
-    "Bootstraps installation of saltstalk on the remote machine"
-    apt = find_pkgmgr()
-    apt.update()
-
-    requires_update = True
-    runner.state('Add salt repository')
-
-    if is_distro('ubuntu'):
-        apt.install('python-software-properties')
-        sudo('add-apt-repository ppa:saltstack/salt -y')
-    elif is_distro('debian'):
-        if not apt.has('salt-master'):
-            runner.state("Add debian backports to repositories")
-            sudo('''cat <<EOF | sudo tee /etc/apt/sources.list.d/backports.list
-deb http://backports.debian.org/debian-backports squeeze-backports main
-EOF''') 
-        else:
-            runner.state("Already has salt packages")
-            requires_update = False
-    else:
-        raise TypeError("Unknowned OS")
-
+def bootstrap(master, minion, upgrade):
+    "Uses salt bootstrapping to setup the remote server with salt"
+    upload_key()
     if upgrade:
-        upgrade_all_packages()
+        apt_update()
+        apt_upgrade()
+        reboot_if_required()
 
-    if requires_update:
-        apt.update()
+    args = []
+    if master:
+        args.append('-M')
+    if not minion:
+        args.append('-N')
+    if env.salt_bleeding:
+        args.append(repr(env.salt_bleeding))
 
-
-
-def bootstrap(upgrade=False):
-    "Performs a bootstrap depending on the operating system."
-    runner.action('Bootstrapping salt')
-    with runner.with_prefix(' ~> '):
-        pkgmgr = find_pkgmgr()
-        bootstrappers = {
-            'apt': bootstrap_with_aptget,
-        }
-        runner.silent('rm -rf /etc/salt/')
-        runner.silent('rm -rf /opt/salt/')
-        bootstrappers[pkgmgr.name](boolean(upgrade))
-
+    context = dict(
+        sh="sh -s -- {0}".format(' '.join(args)),
+        url=env.salt_bootstrap
+    )
+    if has('wget'):
+        sudo("wget -O - {url!r} | {sh}".format(**context))
+    elif has('curl'):
+        sudo("curl -L {url!r} | {sh}".format(**context))
+    elif has('fetch'):
+        sudo('fetch -o - {url!r} | {sh}'.format(**context))
+    elif has('python'):
+        sudo('python -c \'import urllib; print urllib.urlopen("{url}").read()\' | {sh}'.format(**context))
+    else:
+        raise TypeError('Unable to download and run bootstrap script! ({url!r} | {sh})'.format(**context))
 
 
 @roles('minion')
@@ -116,13 +85,8 @@ def minion(master, hostname, roles=()):
     """Sets up the salt-minion on the remote server.
     Argument should be the ip address of the salt master.
     """
-    runner.action('Set up minion daemon')
-    with runner.with_prefix(' ~> '):
-        pkgmgr = find_pkgmgr()
-        pkgmgr.install('salt-minion')
-
-        upload_minion_key(hostname)
-        upload_minion_config(master, roles)
+    upload_minion_key(hostname)
+    upload_minion_config(master, roles)
 
 
 @task
@@ -131,7 +95,7 @@ def hostname(name='', fqdn=True):
     "Gets or sets the machine's hostname"
     if name:
         previous_host = run('hostname').strip()
-        runner.state("Set hostname {0} => {1}".format(repr(previous_host), repr(name)))
+        print "Set hostname {0} => {1}".format(repr(previous_host), repr(name))
         sudo('hostname ' + name)
         sudo('echo {0} > /etc/hostname'.format(name))
         files.sed('/etc/hosts', previous_host, name, use_sudo=True)
@@ -144,19 +108,18 @@ def hostname(name='', fqdn=True):
 def upload_minion_key(hostname, minion_key_dir=None):
     "Installs the minion key generated from the master."
     minion_key_dir = minion_key_dir or minion_key_path()
-    context = dict(hostname=hostname, key_dir=minion_key_dir)
-    run('rm -f {hostname} {hostname}.pub'.format(**context))
-    put(os.path.join('keys', hostname))
+    remove(hostname, hostname + '.pub')
+    remove(hostname, hostname + '.pem')
+    put(os.path.join('keys', hostname + '.pem'))
     put(os.path.join('keys', hostname + '.pub'))
-    sudo('rm -f {key_dir}/minion.pem; true'.format(**context))
-    sudo('rm -f {key_dir}/minion.pub; true'.format(**context))
-    sudo('mv {hostname} {key_dir}/minion.pem'.format(**context))
-    sudo('mv {hostname}.pub {key_dir}/minion.pub'.format(**context))
-    sudo('chown root {key_dir}/minion.pem'.format(**context))
-    sudo('chgrp root {key_dir}/minion.pub'.format(**context))
-    sudo('chmod 400 {key_dir}/minion.pem'.format(**context))
-    sudo('chmod 644 {key_dir}/minion.pub'.format(**context))
-
+    for ext in ['.pem', '.pub']:
+        dest_file = os.path.join(minion_key_dir, 'minion' + ext)
+        silent_remove(dest_file)
+        move(hostname + ext, dest_file)
+        chown('root', dest_file)
+        chgrp('root', dest_file)
+    chmod(400, os.path.join(minion_key_dir, 'minion.pem'))
+    chmod(644, os.path.join(minion_key_dir, 'minion.pub'))
 
 
 @roles('master')
@@ -170,12 +133,15 @@ def create_minion_key(hostname, key_dir=None):
     key_dir = key_dir or master_minions_dir()
     context = dict(hostname=hostname, key_dir=key_dir, user=env.user)
     sudo('salt-key --gen-keys={hostname} --gen-keys-dir={key_dir}'.format(**context))
-    sudo('mv {key_dir}/{hostname}.pub {key_dir}/{hostname}'.format(**context))
-    sudo('cp {key_dir}/{hostname} {hostname}.pub'.format(**context))
-    sudo('mv {key_dir}/{hostname}.pem {hostname}'.format(**context))
-    sudo('chown {user} {hostname}'.format(**context))
-    sudo('chown {user} {hostname}.pub'.format(**context))
-    get(hostname, os.path.join('keys', hostname))
+
+    key_name = '{key_dir}/{hostname}'.format(**context)
+
+    move(key_name + '.pub', key_name) # master the public key
+    copy(key_name, hostname + '.pub') # copy the public key to download
+    move(key_name + '.pem', hostname + '.pem') # move the private key to download
+    chown(env.user, hostname + '.pem') # make sure we can download them
+    chown(env.user, hostname + '.pub')
+    get(hostname + '.pem', os.path.join('keys', hostname + '.pem')) # download
     get(hostname + '.pub', os.path.join('keys', hostname + '.pub'))
 
 
@@ -183,10 +149,7 @@ def create_minion_key(hostname, key_dir=None):
 @roles('master')
 def master():
     "Sets up the salt-master on the remote server."
-    runner.action('Set up master daemon')
-    with runner.with_prefix(' ~> '):
-        find_pkgmgr().install('salt-master')
-        upload_master_config()
+    upload_master_config()
 
 
 def config_template_upload(filename, dest, context={}, use_sudo=True):
@@ -194,11 +157,11 @@ def config_template_upload(filename, dest, context={}, use_sudo=True):
         filepath = os.path.relpath(os.path.join('configurations', config, filename))
         context['__file__'] = filepath
         if os.path.exists(filepath):
-            runner.state('Use template: {0}', filepath)
+            print 'Use template:', filepath
             files.upload_template(filepath, dest, context=context, use_jinja=True, use_sudo=use_sudo)
             return
         else:
-            runner.state('Template {0} does not exist', repr(filepath))
+            print '[warn] Template {0} does not exist', repr(filepath)
     raise TypeError('Could not find {0} to upload in any configuration!'.format(repr(filename)))
 
 
@@ -214,11 +177,9 @@ def salt_config_context(roles=(), **kwargs):
 @roles('master')
 def upload_master_config():
     "Uploads master config to the remote server and restarts the salt-master."
-    runner.state('Upload master configuration')
     config_template_upload('master', '/etc/salt/master', context=salt_config_context())
-    runner.state("Reboot master")
     service('salt-master', 'stop')
-    runner.silent('pkill salt-master', use_sudo=True) # to ensure it gets killed
+    silent_sudo('pkill salt-master') # to ensure it gets killed
     time.sleep(1)
     service('salt-master', 'start')
 
@@ -227,11 +188,11 @@ def upload_master_config():
 @roles('minion')
 def upload_minion_config(master, roles=()):
     "Uploads the minion config to the remote server and restarts the salt-minion."
-    runner.state('Upload minion configuration')
+    print 'Upload minion configuration'
     config_template_upload('minion', '/etc/salt/minion', context=salt_config_context(roles, master=master))
-    runner.state("Reboot minion")
+    print "Restart salt-minion"
     service('salt-minion', 'stop; true')
-    runner.silent('pkill salt-minion', use_sudo=True)
+    silent_sudo('pkill salt-minion')
     time.sleep(1)
     service('salt-minion', 'start')
 
@@ -240,38 +201,28 @@ def upload_minion_config(master, roles=()):
 @requires_configuration
 def upload(sync=True):
     "Uploads all pillars, modules, and states to the remote server."
-    runner.action("Upload Salt Data")
-    with runner.with_prefix(' ~> '):
-        runner.state("Clear existing data")
-        sudo('rm -rf {0}'.format(SALT_DIR))
-        sudo('mkdir -p {0}'.format(SALT_DIR))
-        for system in env.configs:
-            runner.state("Upload configuration: " + system)
-            for dirname in ('states', 'pillars'):
-                src = os.path.join(CONFIG_DIR, system, dirname)
-                path = os.path.join(SALT_DIR, system)
-                dest = os.path.join(path, dirname)
-                runner.state("    - {0}/{1}".format(system, dirname))
-                upload_project(src)
-                # remove dot files
-                sudo('find {0} -name ".*" | xargs rm -rf'.format(dirname))
-                # remove pyc files
-                sudo('find {0} -name "*.pyc" | xargs rm -rf'.format(dirname))
-                with settings(warn_only=True):
-                    sudo('mkdir -p {0}'.format(path))
-                    sudo('mv {0} {1}'.format(dirname, dest))
-        if sync:
-            runner.state("Sync pillar data to minions")
-            sudo("salt '*' saltutil.refresh_pillar")
-            runner.state("Sync states and modules to minions")
-            sudo("salt '*' saltutil.sync_all")
-
-
+    print "Upload Salt Data"
+    silent_mkdir(SALT_DIR)
+    for system in env.configs:
+        print "Upload configuration:", system
+        for dirname in ('states', 'pillars'):
+            src = os.path.join(CONFIG_DIR, system, dirname)
+            path = os.path.join(SALT_DIR, system)
+            dest = os.path.join(path, dirname)
+            print "    - {0}/{1}".format(system, dirname)
+            with settings(warn_only=True):
+                mkdir(dest)
+            chown(env.user, dest)
+            sync_dir(src, dest, exclude=['.*'])
+            chown('root', dest)
+    if sync:
+        salt('saltutil.refresh_pillar')
+        salt('saltutil.sync_all')
 
 def reboot_if_required():
     """Reboots the machine only if the system indicates a restart is required for updates.
     """
-    out = runner.silent('[ -f /var/run/reboot-required ]')
+    out = silent('[ -f /var/run/reboot-required ]')
     if not out.return_code:
-        runner.state("System requires reboot => Rebooting NOW")
+        print "System requires reboot => Rebooting NOW"
         reboot()

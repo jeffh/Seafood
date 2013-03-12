@@ -21,6 +21,10 @@ base:
     'roles:golang':
         - match: grain
         - golang
+    'roles:jenkins':
+        - match: grain
+        - repo-keys
+        - jenkins
     'roles:yacs':
         - match: grain
         - nginx

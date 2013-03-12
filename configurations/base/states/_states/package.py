@@ -1,3 +1,9 @@
+"""
+package state.
+
+A wrapper around pkg.installed that can optionally read overriden
+values from salt pillars.
+"""
 import json
 
 def _load_pkg():
@@ -15,7 +21,8 @@ def installed(name, **kwargs):
     If version kwarg is 'latest', then uses pkg.latest.
     """
     kwargs['name'] = name
-    kwargs.update(__pillar__['packages'].get(name, {}))
+    pkgs = __pillar__['packages']
+    kwargs.update(pkgs.get(name, pkgs.get('default', {})))
     name = kwargs.pop('name')
     
     pkg = _load_pkg()

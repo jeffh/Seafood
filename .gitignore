@@ -1,6 +1,6 @@
 *.pyc
 configurations/*/states/users/keys/*
-configurations/*/states/packages/*
+configurations/*/states/external_files/*
 ksplice.sls
 passwords.sls
 configurations/**/fundamentals*

@@ -8,9 +8,8 @@ from fabric.api import reboot as _reboot
 from fabric.contrib import files
 
 from bootstrapper import lowlevel
-from bootstrapper.config import verbose
-from bootstrapper.helpers import (puts, has, runner, requires_configuration,
-    requires_host, boolean, service)
+from bootstrapper.helpers import (puts, has, requires_configuration,
+    requires_host, boolean, service, copy)
 
 # expose this task
 hostname = lowlevel.hostname
@@ -20,18 +19,15 @@ hostname = lowlevel.hostname
 @parallel
 @requires_host
 def delete_salt():
-    verbose()
-    find_pkgmgr().remove('salt-minion', 'salt-master')
-    sudo('rm -rf /etc/salt /opt/salt /opt/saltstack /var/log/salt; true')
-    sudo('rm -f /usr/local/bin/salt-*; true')
+    return lowlevel.purge_salt()
 
 @task
 @parallel
 @requires_host
 def reboot():
-    runner.action('Rebooting')
+    print "Rebooting"
     _reboot()
-    runner.action('Done')
+    print "Done"
 
 @task
 @_roles('master')
@@ -47,7 +43,7 @@ def setup_master(and_minion=1, upgrade=0):
         upgrade:    Set to 'yes' to upgrade all system packages before
                     installing salt.
     """
-    lowlevel.bootstrap(upgrade)
+    lowlevel.bootstrap(master=True, minion=and_minion, upgrade=upgrade)
     lowlevel.master()
     lowlevel.upload(sync=False)
     if boolean(and_minion):
@@ -88,8 +84,8 @@ def setup_minion(fab_master, master, upgrade=0):
                     installing salt-minion
     """
     name = hostname()
+    lowlevel.bootstrap(master=False, minion=True, upgrade=upgrade)
     local('fab {0} create_minion_key:{1}'.format(fab_master, repr(name)))
-    lowlevel.bootstrap(upgrade)
     lowlevel.minion(master, name, env.salt_roles)
 
     if env.salt_bleeding:
@@ -97,6 +93,25 @@ def setup_minion(fab_master, master, upgrade=0):
         time.sleep(1)
         service('salt-minion', 'start')
 
+@task
+@_roles('master')
+@requires_host
+def master_logs():
+    "Prints out all the logs from the salt master"
+    sudo('cat /var/log/salt/master')
+
+@task
+@requires_host
+def minion_logs():
+    "Prints out all the logs from ths salt minion"
+    sudo('cat /var/log/salt/minion')
+
+@task
+@_roles('master')
+@requires_host
+def salt_versions(filter='*'):
+    sudo('salt --version')
+    sudo("salt {0!r} test.version".format(filter))
 
 @task
 @requires_host
@@ -107,25 +122,20 @@ def deploy(filter='*', upload=1, sync=1, debug=0):
     If debug is set to 'yes', runs locally with more debugging information output.
     If upload is set to 'yes', then uploads current salt configurations to the master before deploying.
     """
-    runner.action('Deploying salt files')
-    output = ''
-    with runner.with_prefix('  '):
-        # if has('/opt/saltstack/', 'test -e %(app)s'):
-        #     lowlevel.upgrade_bleeding()
-        if boolean(upload):
-            lowlevel.upload()
-        if boolean(sync):
-            runner.action('Syncing dynamic modules...')
-            runner.sudo("salt '{0}' saltutil.sync_all".format(filter), combine_stderr=True)
-
-            if boolean(debug):
-                cmd = "salt-call state.highstate -l debug"
-            else:
-                cmd = "salt '{0}' state.highstate".format(filter)
-            runner.action('Ensuring minion state')
-            with show('stdout', 'stderr'):
-                out = runner.sudo(cmd, combine_stderr=True)
-            with open('sync.log', 'w+') as handle:
-                handle.write(out)
-            runner.action('Wrote output to sync.log')
+    print 'Deploying salt files'
+    print '======== Minions ========'
+    salt_versions(filter)
+    if boolean(upload):
+        lowlevel.upload()
+    if boolean(sync):
+        if boolean(debug):
+            cmd = "salt-call state.highstate -l debug"
+        else:
+            cmd = "salt {0!r} state.highstate".format(filter)
+        print 'Ensuring minion state'
+        with show('stdout', 'stderr'):
+            out = sudo(cmd, combine_stderr=True)
+        with open('sync.log', 'w+') as handle:
+            handle.write(out)
+        print 'Wrote output to sync.log'
 
