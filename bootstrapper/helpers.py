@@ -213,7 +213,7 @@ class _HashStreamWrapper(object):
     def hexdigest(self):
         return self.hash.hexdigest()
 
-def download(url, path, md5hash):
+def download(url, path, expected_hash):
     "Downloads a given file to its path and verifies its md5hash"
     try:
         import requests
@@ -230,16 +230,16 @@ def download(url, path, md5hash):
             while content:
                 hasher.update(content)
                 content = h.read(10)
-        if hasher.hexdigest() == md5hash:
+        if hasher.hexdigest() == expected_hash:
             return 
 
     with open(path, 'w+') as h:
         resp = requests.get(url, stream=True)
-        wrapper = _HashStreamWrapper(resp.raw, hashlib.md5())
+        wrapper = _HashStreamWrapper(resp.raw, hashlib.sha256())
         shutil.copyfileobj(wrapper, h)
     message = 'Expected md6 hash {0} to be equal to expected hash {1}'.format(
         repr(wrapper.hexdigest()),
-        repr(md5hash),
+        repr(expected_hash),
     )
     assert wrapper.hexdigest() == md5hash, message
 

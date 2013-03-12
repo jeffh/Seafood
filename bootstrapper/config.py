@@ -97,6 +97,6 @@ def download_external_files(everything=False):
         for package in packages:
             print name, '=>', package['path']
             path = os.path.abspath(package['path'])
-            download(package['url'], path, package['md5'])
+            download(package['url'], path, package['sha256'])
     print 'Done'
 
