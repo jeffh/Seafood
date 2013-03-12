@@ -214,7 +214,7 @@ class _HashStreamWrapper(object):
         return self.hash.hexdigest()
 
 def download(url, path, expected_hash):
-    "Downloads a given file to its path and verifies its md5hash"
+    "Downloads a given file to its path and verifies its sha256 hash"
     try:
         import requests
     except ImportError:
@@ -224,7 +224,7 @@ def download(url, path, expected_hash):
         os.makedirs(parent)
     
     if os.path.exists(path):
-        hasher = hashlib.md5()
+        hasher = hashlib.sha256()
         with open(path, 'r') as h:
             content = h.read(10)
             while content:

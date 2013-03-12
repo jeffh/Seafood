@@ -63,14 +63,14 @@ def develop(ref='develop'):
     env.salt_bleeding = ref
 
 
-def download_package(url, path, md5hash):
+def download_package(url, path, expected_hash):
     """
     Downloads the given package into the configuration system (to test out)
     """
     path = package_path(path, configuration)
     print '[{0}]'.format(configuration), 'GET', url
     print '       =>', rel_package_path(path)
-    download(url, path, md5hash)
+    download(url, path, expected_hash)
 
 
 @task
