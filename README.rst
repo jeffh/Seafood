@@ -58,17 +58,14 @@ Let's do a basic deploy using `fabric`_. First, we'll set up the salt master::
 
 Let's break this command down:
 
-- ``include:yacs`` tells fabric to include the configurations of the given name (yacs in this case). The base configuration is always included by default. Configurations are listed as subdirectories of configurations
+- ``include:net.jeffhui`` tells fabric to include the configurations of the given name (net.jeffhui in this case). The base configuration is always included by default. Configurations are listed as subdirectories of configurations
+- ``roles:yacs`` tells fabric what roles this minion (using grains) should have in its configuration, use commas to separate roles.
 - ``deploy_host`` refers to the host to deploy to. They're specified in bootstrapper/hosts.py file. Alternatively, you can use '-H <hostname>' argument instead.
 - ``setup_master`` bootstraps salt master and salt minion (which points to itself) on the target host.
 
 Also, if you want to ``apt-get upgrade`` while bootstrapping, you can pass the upgrade=1 argument to setup_master::
 
 	fab include:net.jeffhui.net roles:yacs deploy_host setup_master:upgrade=1
-
-If you want to see all the detailed output, prefix with the ``verbose`` command::
-
-	fab verbose include:net.jeffhui.net roles:yacs deploy_host setup_master
 
 All good? Let's deploy a salt minion on another machine::
 
@@ -81,9 +78,9 @@ All good? Let's deploy a salt minion on another machine::
 
 This command actually is several commands:
 
-- ``fab hosts.deploy_client hostname`` Returns the hostname of the given host
-- ``fab hosts.deploy_host lowlevel.generate_minion_key:<hostname>`` Tells the master to generate a public/private key for <hostname> (which is from the previous command)
-- ``fab hosts.deploy_client minion:192.168.1.119`` Bootstraps the minion which the salt pointed to the given ip address.
+- ``fab deploy_client hostname`` Returns the hostname of the given host
+- ``fab deploy_host lowlevel.generate_minion_key:<hostname>`` Tells the master to generate a public/private key for <hostname> (which is from the previous command)
+- ``fab deploy_client minion:192.168.1.119`` Bootstraps the minion which the salt pointed to the given ip address.
 
 Now that both machines are bootstrapped, you can force the salt highstate with a set of configurations::
 
@@ -91,7 +88,8 @@ Now that both machines are bootstrapped, you can force the salt highstate with a
 
 What does this do?
 
-- Uploads all the pillars and salts to the deploy_host (our master) from the base configuration and yacs configuration.
+- Uploads all the pillars and salts to the deploy_host (our master) from the base configuration and yacs configuration using rsync.
+- Syncs all custom modules, states, grains using ``salt '*' saltutil.sync_all``
 - Runs ``salt '*' state.highstate`` on the master - this propagates all the changes directly to all minions (including itself).
 
 And that's it! You can look around and create your own configurations to tinker
@@ -109,12 +107,12 @@ packages.sls pillar.
 
 The packages can be download by running::
 
-    fab download_packages
+    fab download_external_files
 
 Which will download the first package it finds in each group. If you prefer to
 download all versions use::
 
-    fab download_packages:everything=True
+    fab download_external_files:everything=True
 
 -----------
 Development
@@ -122,8 +120,8 @@ Development
 
 You can use the ``develop`` command before ``setup_master`` and ``setup_minion`` to deploy with the latest git branch (useful for verifying bugfixes)::
 
-    fab include:yacs hosts.deploy_host develop setup_master
+    fab include:net.jeffhui roles:yacs deploy_host develop setup_master
 
-Alternatively, you can provide a different public git repository to clone::
+Alternatively, you can provide a hash of the official git repository to use (defaults to 'develop'):
 
-    fab include:yacs hosts.deploy_host develop:'git://github.com/jeffh/salt.git' setup_master
+    fab include:net.jeffhui roles:yacs deploy_host develop:'master' setup_master
