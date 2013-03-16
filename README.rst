@@ -44,6 +44,18 @@ The sample files can be quickly found using `find`::
 
     find . -name '*_sample*'
 
+You can then add your target hosts to the hosts.py file::
+
+    @task
+    def master_host():
+        add_host('user@master', 'mypassword', roles=['master'])
+
+    @task
+    def minion_host():
+        add_host('user@minion', 'mypassword', roles=['minion'])
+
+The roles argument are roles you wish the minion to have. 'master' or 'minion' is required for seafood to determine what kind of system the host is.
+
 ----------
 How to use
 ----------
@@ -60,7 +72,7 @@ Let's break this command down:
 
 - ``include:net.jeffhui`` tells fabric to include the configurations of the given name (net.jeffhui in this case). The base configuration is always included by default. Configurations are listed as subdirectories of configurations
 - ``roles:yacs`` tells fabric what roles this minion (using grains) should have in its configuration, use commas to separate roles.
-- ``deploy_host`` refers to the host to deploy to. They're specified in bootstrapper/hosts.py file. Alternatively, you can use '-H <hostname>' argument instead.
+- ``deploy_host`` refers to the host to deploy to. They're specified in bootstrapper/hosts.py file.
 - ``setup_master`` bootstraps salt master and salt minion (which points to itself) on the target host.
 
 Also, if you want to ``apt-get upgrade`` while bootstrapping, you can pass the upgrade=1 argument to setup_master::
