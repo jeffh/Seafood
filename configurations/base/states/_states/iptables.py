@@ -26,6 +26,9 @@ _ARGS = dict(
     limit_burst='--limit-burst {limit_burst}',
     tcp_flags='--tcp-flags {tcp_flags}',
     protocol='-p {protocol}',
+    seconds='--seconds {seconds}',
+    match='-m {match}',
+    hitcount='--hitcount {hitcount}',
 )
 
 def _rule(prefix, rule_hash):
@@ -78,6 +81,13 @@ def _rules_from_protocol(proto):
             # sending pings
             'INPUT -p icmp --icmp-type echo-reply -j ACCEPT',
             'OUTPUT -p icmp --icmp-type echo-request -j ACCEPT',
+        ],
+        # from http://www.ossramblings.com/using_iptables_rate_limiting_to_prevent_portscans
+        deny_nmap=[
+            'INPUT -p tcp -m state --state NEW -m recent --set',
+            'INPUT -p tcp -m state --state NEW -m recent --update --seconds 30 --hitcount 10 -j DROP',
+            'FORWARD -p tcp -m state --state NEW -m recent --set',
+            'FORWARD -p tcp -m state --state NEW -m recent --update --seconds 30 --hitcount 10 -j DROP',
         ]
     )[proto]
 
