@@ -8,8 +8,8 @@ base:
         - ufw
         - monit
         - salt.minion
-        - tools.vim.default
-        - tools.curl
+        - vim.default
+        - curl
     'roles:salt-master':
         - match: grain
         - salt.master

@@ -1,6 +1,6 @@
 # makes this the default editor of choice!
 include:
-    - tools.vim
+    - vim
 
 tools.editor:
     environment.set:

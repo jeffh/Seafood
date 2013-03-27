@@ -1,5 +1,5 @@
 include:
-    - tools.curl
+    - curl
 
 {% set keys = ['minute', 'hour', 'daymonth', 'month', 'dayweek'] %}
 {% for ping in pillar['http-ping'] %}

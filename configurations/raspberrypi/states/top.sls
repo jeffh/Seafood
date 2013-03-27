@@ -6,7 +6,7 @@ base:
         - lsb-release
         - monit
         - salt.minion
-        - tools.vim.default
+        - vim.default
     'roles:git':
         - match: grain
         - gitolite
