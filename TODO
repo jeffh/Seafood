@@ -2,13 +2,172 @@ Things that can be improved:
  - Make KSplice support more than debian/ubuntu OSes
  - Finish PHP support
  - Finish HG support
- - Finish postfix support
- - Add gitolite support
  - Fix/Remove golang
- - Fix/Remove ruby/rvm support
  - Add ability to set global configs to git
  - TEST on another linux distro!
 
-Bugs:
- - Detect deadlocks for <0.10.5 or until distros bundle it:
-   https://github.com/saltstack/salt/issues/2423
+pivotal_workstation:
+ - 1password
+ - ack
+ - active_corners (?)
+ - activemq
+ - adium
+ - alfred
+ - arq
+ - bartender
+ - bash4
+ - bash_completion
+ - bash_it?
+ - bettertouchtool
+ - caffeine
+ - ccmenu
+ - charles_proxy
+ - chrome
+ - chrome_canary
+ - composer
+ - coreutils
+ - csshx
+ - default (???)
+ - default_editor (???)
+ - defaults_fast_key_repeat_rate
+ - diff_merge
+ - dock_preferences
+ - dropbox
+ - ec2_api_tools (??)
+ - enable_assistive_devices
+ - erlang
+ - evernote
+ - finder_display_full_path
+ - findutils
+ - firefox
+ - firefox_aurora
+ - flux
+ - flycut
+ - freeruler
+ - function_keys
+ - gem_setup
+ - git_config_global_defaults
+ - git_projects
+ - git_scripts
+ - github_for_mac
+ - github_ssh_keys
+ - gitx
+ - global_environmental_variables
+ - gnu-tar
+ - google_chrome_prevent_updates
+ - grid
+ - heroku_toolbelt
+ - homebrew
+ - hub
+ - imagemagick
+ - increase_shared_memory (???)
+ - input_on_login (???)
+ - inputrc
+ - intellj_community_edition
+ - intellij_ultimate_edition
+ - istatmenus
+ - iterm2
+ - java
+ - joe (???)
+ - jpegoptim (???)
+ - jumpcut (???)
+ - kaleidoscope2
+ - keyboard_preferences
+ - keycastr
+ - libreoffice
+ - lion_basedev (???)
+ - locate_on
+ - memcached
+ - menubar_preferences (???)
+ - menumeters
+ - meta_osx_base (????)
+ - meta_osx_development (????)
+ - meta_pivotal_lion_image (????)
+ - meta_pivotal_specifics (????)
+ - meta_ruby_development (????)
+ - mod-jk
+ - mongodb
+ - mouse_locator
+ - mysql-python
+ - mysql
+ - nginx
+ - node_js
+ - nvalt
+ - oh_my_zsh
+ - omnigraffle
+ - optipng
+ - osx_disable_natural_scrolling (?)
+ - osx_updates
+ - pg_admin
+ - pivotal_logos
+ - postgres
+ - postgres_citext
+ - propane
+ - psycopg2
+ - pwgen
+ - qt
+ - rabbitmq
+ - rbenv
+ - redis
+ - remove_expose_keyboard_shortcuts (???)
+ - remove_garageband
+ - rename_machine
+ - root_shell_bash
+ - rubymine
+ - rubymine_preferences_pivotal
+ - rvm
+ - safari_preferences
+ - samanage
+ - screen_sharing_app
+ - screen_sharing_on
+ - selenium_webdriver
+ - sequelpro
+ - set_finder_show_all_hd_on_desktop
+ - set_finder_show_hd_on_desktop
+ - set_finder_show_user_home_in_sidebar
+ - set_multitouch_preferences
+ - set_screensave_preferences
+ - set_start_up_automatically
+ - shiftit
+ - siege
+ - sizeup
+ - skype
+ - snmpd
+ - solr
+ - source_code_pro_font
+ - sourcetree
+ - ssh_copy_id
+ - sshd_on
+ - ssl_certificate
+ - standby-delay
+ - sublime_text
+ - svn
+ - tcp_keepalive
+ - terminal_focus (???)
+ - terminal_preferences
+ - textmate
+ - textmate2
+ - textmate_bundles
+ - textmate_plugins
+ - textmate_preferences
+ - things
+ - timemachine_preferences
+ - tmux
+ - tower
+ - tunnelblick
+ - unhide_home
+ - unix_essentials
+ - user_owns_usr_local
+ - vagrant
+ - vim
+ - virtualbox
+ - viscosity
+ - vlc
+ - watch
+ - wget
+ - window_focus
+ - workspace_directory
+ - xmlstarlet
+ - xquartz
+ - zsh
+
