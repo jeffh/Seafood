@@ -16,4 +16,4 @@ def unmount(name, force=False):
 	if force:
 		args.append('-f')
 
-	return __salt__['cmd.run'](' '.join(args))
+	return __salt__['cmd.run'](' '.join(args)) 

@@ -7,7 +7,7 @@ Things that can be improved:
  - TEST on another linux distro!
 
 pivotal_workstation:
- - 1password
+ x 1password
  - ack
  - active_corners (?)
  - activemq

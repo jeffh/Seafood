@@ -1,0 +1,3 @@
+ack:
+    package:
+        - installed
