@@ -10,12 +10,17 @@ from fabric.contrib import files
 from fabric import operations
 
 from bootstrapper.helpers import *
-from bootstrapper.config import CONFIG_DIR, SALT_DIR, master_minions_dir, minion_key_path
+from bootstrapper.config import CONFIG_DIR, SALT_DIR, master_minions_dir, minion_key_path, group
 
 
 purge_salt = Dispatcher('purge_salt',
     dispatch=has,
     doc="Removes all salt files from the remote system"
+)
+
+bootstrap = Dispatcher('bootstrap',
+    dispatch=is_platform,
+    doc="Bootstraps the salt minion/master to the given host."
 )
 
 @purge_salt.register('apt-get')
@@ -36,6 +41,7 @@ def upload_key(local_key='~/.ssh/id_rsa.pub'):
     "Uploads the provided local key to the remote server."
     local_key = os.path.expandvars(os.path.expanduser(local_key))
     user = env.user
+
     home = silent_sudo('pwd').strip()
     ssh_dir = os.path.join(home, '.ssh')
     with settings(warn_only=True):
@@ -45,10 +51,49 @@ def upload_key(local_key='~/.ssh/id_rsa.pub'):
         files.append(os.path.join(ssh_dir, 'authorized_keys'), handle.read())
     chmod(700, ssh_dir)
     chown(user, ssh_dir)
-    chgrp(user, ssh_dir)
+    chgrp(group(), ssh_dir)
 
 
-def bootstrap(master, minion, upgrade):
+@bootstrap.register('darwin')
+def bootstrap_osx_homebrew(master, minion, upgrade):
+    "Bootstraps OSX to be a salt minion or master using homebrew as the base"
+    upload_key()
+
+    # TODO: support env.salt_bleeding
+
+    remove('/tmp/homebrew')
+    git.using(sudo)('clone https://github.com/mxcl/homebrew.git /tmp/homebrew')
+    sudo('rsync -axSH /tmp/homebrew/ /usr/local/')
+    chmod('775', '/usr/local/')
+    chown('root', '/usr/local/')
+    chgrp('staff', '/usr/local/')
+    with cd('/usr/local/'):
+        sudo('git clean -fd')
+
+    brew_install('swig')
+    brew_install('zmq')
+    brew_install('python')
+    run('pip install salt')
+
+    # increase max files limit (os default is 256...)
+    # salt-masters need at least 2x the number of clients
+    sudo('launchctl limit maxfiles 10000')
+    context = dict(python=run('which python'),
+                   salt_master=run('which salt-master'),
+                   salt_minion=run('which salt-minion'))
+
+    if master:
+        config_template_upload('osx/org.saltstack.salt-master.plist', '/Library/LaunchDaemons/org.saltstack.salt-master.plist',
+                               context=None, use_sudo=True)
+        sudo('launchctl load -w /Library/LaunchDaemons/org.saltstack.salt-master.plist')
+    if minion:
+        config_template_upload('osx/org.saltstack.salt-minion.plist', '/Library/LaunchDaemons/org.saltstack.salt-minion.plist',
+                               context=None, use_sudo=True)
+        sudo('launchctl load -w /Library/LaunchDaemons/org.saltstack.salt-minion.plist')
+
+
+@bootstrap.register('linux')
+def bootstrap_linux(master, minion, upgrade):
     "Uses salt bootstrapping to setup the remote server with salt"
     upload_key()
     if upgrade:
@@ -152,7 +197,8 @@ def master():
     upload_master_config()
 
 
-def config_template_upload(filename, dest, context={}, use_sudo=True):
+def config_template_upload(filename, dest, context=None, use_sudo=True):
+    context = context or {}
     for config in env.configs:
         filepath = os.path.relpath(os.path.join('configurations', config, filename))
         context['__file__'] = filepath

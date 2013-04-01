@@ -8,19 +8,19 @@ Things that can be improved:
 
 pivotal_workstation:
  x 1password
- - ack
+ x ack
  - active_corners (?)
  - activemq
  - adium
- - alfred
+ x alfred
  - arq
  - bartender
  - bash4
  - bash_completion
  - bash_it?
  - bettertouchtool
- - caffeine
- - ccmenu
+ x caffeine
+ x ccmenu
  - charles_proxy
  - chrome
  - chrome_canary

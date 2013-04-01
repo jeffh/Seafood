@@ -4,7 +4,7 @@ import os
 from fabric.api import task, env, sudo
 from fabric.state import output
 
-from bootstrapper.helpers import boolean, download
+from bootstrapper.helpers import boolean, download, is_platform
 
 SALT_DIR = '/opt/salt/'
 CONFIG_DIR = os.path.abspath('configurations')
@@ -12,6 +12,14 @@ env.configs = ['base']
 env.salt_bleeding = False
 env.salt_roles = []
 env.salt_bootstrap = 'https://raw.github.com/jeffh/salt-bootstrap/develop/bootstrap-salt.sh'
+env.group = None
+
+def group():
+    if env.group is None:
+        env.group = env.user
+        if is_platform('darwin'):
+            env.group = 'staff'
+    return env.group
 
 def master_minions_dir():
     "Returns the directory for the master's minion keys directory"
