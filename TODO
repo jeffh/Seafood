@@ -22,7 +22,7 @@ pivotal_workstation:
  x caffeine
  x ccmenu
  - charles_proxy
- - chrome
+ x chrome
  - chrome_canary
  - composer
  - coreutils
