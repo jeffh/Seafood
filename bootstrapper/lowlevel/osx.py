@@ -26,11 +26,11 @@ def bootstrap_osx_homebrew(master, minion, upgrade):
     remove('/tmp/homebrew')
     git.using(sudo)('clone', 'https://github.com/mxcl/homebrew.git', '/tmp/homebrew')
     sudo('rsync -axSH /tmp/homebrew/ /usr/local/')
+    with cd('/usr/local/'):
+        sudo('git clean -fd')
     chmod('775', '/usr/local/')
     chown('root', '/usr/local/')
     chgrp('staff', '/usr/local/')
-    with cd('/usr/local/'):
-        sudo('git clean -fd')
 
     brew_install('swig')
     brew_install('zmq')
