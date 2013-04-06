@@ -8,3 +8,5 @@ configurations/net.jeffhui.net/*/top.sls
 keys/*
 bootstrapper/hosts.py
 sync.log
+
+/osx/
