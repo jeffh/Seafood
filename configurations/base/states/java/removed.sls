@@ -1,4 +1,7 @@
 java:
     package.purged:
-        - name: openjdk-6-jre-headless
+        - names:
+            - openjdk-6-jre-headless
+            - openjdk-6-jre
+            - openjdk-6-jdk
 

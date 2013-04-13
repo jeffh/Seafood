@@ -22,7 +22,7 @@ def write(variables, path='/etc/environment'):
     """
     with open(path, 'w') as handle:
         for name, value in list(variables):
-            handle.write('{0}={1}\n'.format(name, value))
+            handle.write('{0}="{1}"\n'.format(name, value.replace('\\', '\\\\').replace('"', '\\"')))
 
 def set_variable(name, value, path='/etc/environment'):
     """Sets a variable's value to a given value.

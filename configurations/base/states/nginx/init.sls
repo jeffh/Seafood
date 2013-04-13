@@ -17,12 +17,12 @@ nginx:
 '/etc/monit/conf.d/nginx.conf':
     optional_file.managed:
         - onlyif: '[ -e /etc/monit/conf.d/ ]'
-        - source: salt://nginx/monit.conf
+        - source: salt://nginx/files/monit.conf
         - user: root
         - group: root
         - template: jinja
         - defaults:
-            service_name: {{ pillar['packages'].get('nginx', {}).get('service', 'nginx') }}
+            service_name: {{ salt['pillar.get']('pillar:nginx:service_name', 'nginx') }}
             ports:
                 - number: 80
                   ssl: False
@@ -70,7 +70,7 @@ nginx:
 
 '/etc/nginx/nginx.conf':
     file.managed:
-        - source: salt://nginx/nginx.conf
+        - source: salt://nginx/files/nginx.conf
         - user: root
         - group: root
         - template: jinja
@@ -80,7 +80,7 @@ nginx:
 
 '/etc/nginx/mime.types':
     file.managed:
-        - source: salt://nginx/mime.types
+        - source: salt://nginx/files/mime.types
         - user: root
         - group: root
         - mode: 644

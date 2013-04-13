@@ -13,7 +13,6 @@ base:
     'roles:salt-master':
         - match: grain
         - salt.master
-        - salt.master.highstate-cron
     'roles:gitolite':
         - match: grain
         - gitolite
@@ -25,21 +24,38 @@ base:
         - match: grain
         - repo-keys
         - jenkins
-    'roles:yacs':
-        - match: grain
+    'G@roles:yacs and G@roles:everything':
+        - match: compound
         - nginx
         - memcached
         - memcached.dev
-        - nodejs
-        - nodejs.npm
-        - nodejs.coffeescript
+        - coffeescript
         - postgresql
         - postgresql.dev
-        - java
-        - python
-        - python.dev
-        - python.pip
-        - python.virtualenv
+        - java.core
+        - pip
+        - virtualenv
+        - yacs
+    'G@roles:yacs and G@roles:db':
+        - match: compound
+        - postgresql
+    'G@roles:yacs and G@roles:cache':
+        - match: compound
+        - memcached
+    'G@roles:yacs and G@roles:webserver':
+        - match: compound
+        - nginx
+        - memcached
+        - memcached.dev
+        - coffeescript
+        - postgresql.dev
+        - java.core
+        - pip
+        - virtualenv
+        - yacs
+    'G@roles:yacs and G@roles:webproxy':
+        - match: compound
+        - nginx
         - yacs
     'os:(Ubuntu|Debian)':
         - match: grain_pcre

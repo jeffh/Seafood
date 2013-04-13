@@ -7,6 +7,7 @@ from fabric.contrib import files
 
 from bootstrapper.helpers import *
 from bootstrapper.config import CONFIG_DIR, SALT_DIR, master_minions_dir, minion_key_path, group
+from bootstrapper.lowlevel.utils import config_template_upload, salt_config_context, set_hostname
 
 
 @roles('minion')
@@ -23,11 +24,7 @@ def minion(master, hostname, roles=()):
 def hostname(name='', fqdn=True):
     "Gets or sets the machine's hostname"
     if name:
-        previous_host = run('hostname').strip()
-        print "Set hostname {0} => {1}".format(repr(previous_host), repr(name))
-        sudo('hostname ' + name)
-        sudo('echo {0} > /etc/hostname'.format(name))
-        files.sed('/etc/hosts', previous_host, name, use_sudo=True)
+        set_hostname(name)
     else:
         return sudo('hostname {0}'.format('-f' if boolean(fqdn) else '')).strip()
 
@@ -123,6 +120,7 @@ def upload(sync=True):
             chown(env.user, dest)
             sync_dir(src, dest, exclude=['.*'])
             chown('root', dest)
+            chgrp('root', dest)
     if sync:
         salt('saltutil.refresh_pillar')
         salt('saltutil.sync_all')

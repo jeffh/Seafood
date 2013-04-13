@@ -1,6 +1,6 @@
 import os
 
-from fabric.api import reboot, env, settings
+from fabric.api import reboot, env, settings, run, sudo
 from fabric.contrib import files
 
 from bootstrapper.helpers import silent, chmod, mkdir, chown, chgrp, silent_sudo
@@ -37,6 +37,13 @@ def reboot_if_required():
         print "System requires reboot => Rebooting NOW"
         reboot()
 
+def set_hostname(name):
+    "Sets the target machine's hostname"
+    previous_host = run('hostname').strip()
+    print "Set hostname {0} => {1}".format(repr(previous_host), repr(name))
+    sudo('hostname ' + name)
+    sudo('echo {0} > /etc/hostname'.format(name))
+    files.sed('/etc/hosts', previous_host, name, use_sudo=True)
 
 def upload_key(local_key='~/.ssh/id_rsa.pub'):
     "Uploads the provided local key to the remote server."

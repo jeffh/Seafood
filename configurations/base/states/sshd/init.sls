@@ -1,4 +1,3 @@
-{% set sshd = pillar.get('sshd', {}) %}
 sshd:
     package:
         - installed
@@ -11,27 +10,27 @@ sshd:
 
 '/etc/ssh/sshd_config':
     file.managed:
-        - source: salt://sshd/sshd_config
+        - source: salt://sshd/files/sshd_config
         - mode: 644
         - template: jinja
         - require:
             - package: sshd
         - defaults:
-            port: {{ sshd.get('port', 22) }}
-            root_can_login: {{ sshd.get('root_can_login', True) }}
-            allow_password_auth: {{ sshd.get('allow_password_auth', True) }}
+            port: {{ salt['pillar.get']('sshd:port', 22) }}
+            root_can_login: {{ salt['pillar.get']('sshd:root_can_login', True) }}
+            allow_password_auth: {{ salt['pillar.get']('sshd:allow_password_auth', False) }}
 
 '/etc/monit/conf.d/sshd.conf':
     optional_file.managed:
         - onlyif: '[ -e /etc/monit/conf.d/ ]'
-        - source: salt://sshd/monit.conf
+        - source: salt://sshd/files/monit.conf
         - user: root
         - group: root
         - template: jinja
         - defaults:
-            service_name: {{ pillar['packages'].get('sshd', {}).get('service', 'ssh') }}
-            port: {{ sshd.get('port', 22) }}
-            pidfile: {{ sshd.get('pidfile', '/var/run/sshd.pid') }}
+            service_name: {{ salt['pillar.get']('packages:sshd:service', 'ssh') }}
+            port: {{ salt['pillar.get']('sshd:port', 22) }}
+            pidfile: {{ salt['pillar.get']('sshd:pid_file', '/var/run/sshd.pid') }}
         - require:
             - package: sshd
             - file: /etc/ssh/sshd_config

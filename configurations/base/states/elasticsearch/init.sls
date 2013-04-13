@@ -1,5 +1,5 @@
 include:
-    - java
+    - java.core
 
 elasticsearch:
     package:

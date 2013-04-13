@@ -12,7 +12,7 @@ mumble-server:
 {% set port = ms.get('port', 64738) %}
 '/etc/mumble-server.ini':
     file.managed:
-        - source: salt://mumble-server/mumble-server.ini
+        - source: salt://mumble-server/files/mumble-server.ini
         - user: root
         - group: root
         - template: jinja
@@ -33,7 +33,7 @@ mumble-server:
 '/etc/monit/conf.d/mumble-server.conf':
     optional_file.managed:
         - onlyif: '[ -e /etc/monit/conf.d/ ]'
-        - source: salt://mumble-server/monit.conf
+        - source: salt://mumble-server/files/monit.conf
         - user: root
         - group: root
         - template: jinja

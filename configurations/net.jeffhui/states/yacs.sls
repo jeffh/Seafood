@@ -11,15 +11,20 @@ yacs:
             upstream_servers:
               - host: localhost
                 port: 8000
+                max_fails: 2
+              {% for server in pillar.get('yacs_upstream', []) %}
+              - host: {{ server['host'] }}
+                port: {{ server['port'] }}
+                max_fails: {{ server.get('max_fails', 1) }}
+                weight: {{ server.get('weight', 1) }}
+                fail_timeout: {{ server.get('fail_timeout', 10) }}
+              {% endfor %}
             server_name: localhost yacs.me
             root: /www/yacs/
             static_url: /static/
             static_root: /www/yacs/static/
         - require:
             - file: /www/yacs
-    environment.set:
-        - variables:
-            YACS_ENV: production
     postgres_user.present:
         - password: {{ pillar['passwords']['yacs_db'] }}
         - runas: postgres

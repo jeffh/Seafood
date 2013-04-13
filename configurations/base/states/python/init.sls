@@ -1,3 +1,3 @@
-python:
-    package:
-        - installed
+include:
+    - python.core
+    - python.dev

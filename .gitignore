@@ -10,3 +10,4 @@ bootstrapper/hosts.py
 sync.log
 
 /osx/
+/configurations/net.jeffhui/pillars/yacs/environment.sls

@@ -71,13 +71,13 @@ Let's do a basic deploy using `fabric`_. First, we'll set up the salt master::
 Let's break this command down:
 
 - ``include:net.jeffhui`` tells fabric to include the configurations of the given name (net.jeffhui in this case). The base configuration is always included by default. Configurations are listed as subdirectories of configurations
-- ``roles:yacs`` tells fabric what roles this minion (using grains) should have in its configuration, use commas to separate roles.
+- ``roles:yacs,everything`` tells fabric what roles this minion (using grains) should have in its configuration, use commas to separate roles.
 - ``deploy_host`` refers to the host to deploy to. They're specified in bootstrapper/hosts.py file.
 - ``setup_master`` bootstraps salt master and salt minion (which points to itself) on the target host.
 
 Also, if you want to ``apt-get upgrade`` while bootstrapping, you can pass the upgrade=1 argument to setup_master::
 
-	fab include:net.jeffhui.net roles:yacs deploy_host setup_master:upgrade=1
+	fab include:net.jeffhui.net roles:yacs,evernything deploy_host setup_master:upgrade=1
 
 All good? Let's deploy a salt minion on another machine::
 
@@ -132,8 +132,10 @@ Development
 
 You can use the ``develop`` command before ``setup_master`` and ``setup_minion`` to deploy with the latest git branch (useful for verifying bugfixes)::
 
-    fab include:net.jeffhui roles:yacs deploy_host develop setup_master
+    fab include:net.jeffhui roles:yacs,everything deploy_host develop setup_master
 
 Alternatively, you can provide a hash of the official git repository to use (defaults to 'develop'):
 
-    fab include:net.jeffhui roles:yacs deploy_host develop:'master' setup_master
+    fab include:net.jeffhui roles:yacs,everything deploy_host develop:'master' setup_master
+
+Currently, this feature isn't available when deploying to OSX.

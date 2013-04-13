@@ -13,7 +13,12 @@ base:
         - base.gitolite
     'roles:yacs':
         - match: grain
+        - yacs.users
         - yacs.passwords
+    'G@roles:yacs and G@roles:webproxy':
+        - match: compound
+        - yacs.passwords
+        - yacs.upstream
     'os:(Ubuntu|Debian)':
         - match: grain_pcre
         - base.ksplice

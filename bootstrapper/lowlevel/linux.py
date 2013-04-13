@@ -1,6 +1,6 @@
 from fabric.api import (env, sudo)
 
-from bootstrapper.helpers import (remove, chown, chmod, chgrp, git, apt_update, apt_upgrade)
+from bootstrapper.helpers import (remove, chown, chmod, chgrp, git, apt_update, apt_upgrade, has)
 from bootstrapper.lowlevel.dispatchers import bootstrap
 from bootstrapper.lowlevel.utils import reboot_if_required, upload_key
 

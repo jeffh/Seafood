@@ -10,6 +10,8 @@ from fabric.api import sudo, run, local, settings, hide, env, task
 from fabric.utils import puts
 from fabric.contrib.project import rsync_project
 
+import bootstrapper.config
+
         
 def silent(cmd):
     "Returns the given command without printing stdout or stderr."
@@ -64,7 +66,7 @@ apt_clean = Command('apt-get autoremove -yq {kwargs} {args}')
 apt_has = Command('apt-cache show {kwargs} {args}')
 
 has = Command('which {args}').using(silent_sudo).then(__return_succeeded)
-is_platform = Command('uname | grep -iq {kwargs} {args}').then(__return_succeeded)
+is_platform = Command('uname | grep -iq {kwargs} {args}').using(silent_sudo).then(__return_succeeded)
 is_distro = Command('grep {args} /etc/issue -i -q {kwargs}').using(silent_sudo).then(__return_succeeded)
 remove = Command('rm -rf {kwargs} {args}')
 silent_remove = remove.using(silent_sudo)
@@ -163,11 +165,8 @@ def requires_configuration(fn):
         return fn(*args, **kwargs)
     return wrapper
 
-
-def add_host(name, password=None, roles=None):
+def add_host(name, password=None, roles=None, hostname=None):
     """Helper method to add a host with a password. This is used more for testing.
-
-    YOU REALLY SHOULDN'T ADD PASSWORDS HERE.
     """
     if roles:
         env.roledefs = env.roledefs or defaultdict(list)
@@ -175,6 +174,9 @@ def add_host(name, password=None, roles=None):
             env.roledefs[role].append(name)
     print 'Added host target:', name
     env.hosts += [name]
+
+    if hostname:
+        env.hostnames[name] = hostname
 
     if password is None:
         return

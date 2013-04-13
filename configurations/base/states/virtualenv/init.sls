@@ -1,6 +1,5 @@
 include:
     - python
-    - python.dev
 
 virtualenv:
     package.installed:

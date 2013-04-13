@@ -3,7 +3,7 @@ from fabric.api import (reboot, env, sudo, cd, run, get, put, task)
 
 from bootstrapper.helpers import (silent, silent_remove, remove, chown, chmod, chgrp, git, brew_install)
 from bootstrapper.lowlevel.dispatchers import bootstrap
-from bootstrapper.lowlevel.utils import upload_key
+from bootstrapper.lowlevel.utils import upload_key, config_template_upload
 
 def install_dmg(local_dmg, resource):
     silent_remove('/tmp/install.dmg')

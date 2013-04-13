@@ -15,7 +15,9 @@
         {% else %}
         - gid_from_name: True
         {% endif %}
-        - home: {{ user.get('home', '/home/{{ username }}/') }}
+        {% if 'home' in user %}
+        - home: {{ user['home'] }}
+        {% endif %}
         {% if not user.get('can_login', True) %}
         - shell: /bin/nologin
         {% endif %}

@@ -19,7 +19,7 @@ memcached:
         - group: root
         - mode: 644
         - template: jinja
-        - source: salt://memcached/memcached.conf
+        - source: salt://memcached/files/memcached.conf
         - defaults:
             user: {{ user }}
             port: {{ port }}
@@ -36,7 +36,7 @@ memcached:
 '/etc/monit/conf.d/memcached.conf':
     optional_file.managed:
         - onlyif: '[ -e /etc/monit/conf.d/ ]'
-        - source: salt://memcached/monit.conf
+        - source: salt://memcached/files/monit.conf
         - user: root
         - group: root
         - mode: 644

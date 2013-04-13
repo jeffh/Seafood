@@ -13,6 +13,7 @@ env.salt_bleeding = False
 env.salt_roles = []
 env.salt_bootstrap = 'https://raw.github.com/jeffh/salt-bootstrap/develop/bootstrap-salt.sh'
 env.group = None
+env.hostnames = {}
 
 def group():
     if env.group is None:

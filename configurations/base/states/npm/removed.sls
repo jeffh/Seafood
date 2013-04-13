@@ -1,3 +1,3 @@
-nodejs:
+npm:
     package:
         - purged
