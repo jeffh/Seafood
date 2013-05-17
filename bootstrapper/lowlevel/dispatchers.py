@@ -33,8 +33,8 @@ def purge_salt_files():
 @bootstrap.before
 def assign_hostname(*args, **kwargs):
     if env.host_string in env.hostnames:
-    	hosts(env.host_string)(set_hostname)(env.hostnames[env.host_string])
+        hosts(env.host_string)(set_hostname)(env.hostnames[env.host_string])
 
 @bootstrap.after
 def perform_reboot(*args, **kwargs):
-	reboot_if_required()
+    reboot_if_required()

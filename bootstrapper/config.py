@@ -14,6 +14,9 @@ env.salt_roles = []
 env.salt_bootstrap = 'https://raw.github.com/jeffh/salt-bootstrap/develop/bootstrap-salt.sh'
 env.group = None
 env.hostnames = {}
+env.osx = {
+    'cli_dmg': os.path.abspath('osx/xcode462_cltools_10_86938259a.dmg'),
+}
 
 def group():
     if env.group is None:
@@ -39,7 +42,7 @@ def minion_key_path():
         return '/etc/salt/pki/minion'
 
 
-############################# CONFIGURATION #########################    
+############################# CONFIGURATION #########################
 @task
 def include(name):
     """Adds configuration types, separated by spaces. Can optionally be called multiple times.
@@ -56,11 +59,11 @@ def include(name):
 def roles(*args):
     """Sets the roles assign to the targeted machine. Can provide a comma-separated
     list of roles.
-    
+
     The salt master will always include the 'salt-master' role.
-    
+
     Example:
-    
+
         fab roles:yacs,db deploy_minion
     """
     env.salt_roles.extend(args)

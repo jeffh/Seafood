@@ -1,4 +1,7 @@
+import sys
 import os
+from functools import wraps
+from StringIO import StringIO
 
 from fabric.api import reboot, env, settings, run, sudo
 from fabric.contrib import files
@@ -14,6 +17,7 @@ def config_template_upload(filename, dest, context=None, use_sudo=True):
         context['__file__'] = filepath
         if os.path.exists(filepath):
             print 'Use template:', filepath
+            (sudo if use_sudo else run)('mkdir -p {0!r}; true'.format(os.path.dirname(dest)))
             files.upload_template(filepath, dest, context=context, use_jinja=True, use_sudo=use_sudo)
             return
         else:
@@ -60,3 +64,30 @@ def upload_key(local_key='~/.ssh/id_rsa.pub'):
     chmod(700, ssh_dir)
     chown(user, ssh_dir)
     chgrp(group(), ssh_dir)
+
+def print_line(*args, **kwargs):
+    env.stdout.write(' '.join(map(str, args)).format(**kwargs))
+    env.stdout.write('\n')
+    env.stdout.flush()
+
+def log_to_file(filename=None, handle=None):
+    "Logs the given task's output to a given file or handle. The true stdout can be accessed using env.stdout."
+    assert filename or handle, 'filename or handle must be provided'
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            if filename:
+                print 'Output:', filename
+            system_stdout = env.stdout = sys.stdout
+            system_stderr = env.stderr = sys.stderr
+            output = handle or open(filename, 'w+')
+            sys.stdout = sys.stderr = output
+            try:
+                return fn(*args, **kwargs)
+            finally:
+                sys.stdout = system_stdout
+                sys.stderr = system_stderr
+                output.close()
+        return wrapper
+    return decorator
+

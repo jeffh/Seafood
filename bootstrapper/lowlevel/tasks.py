@@ -1,8 +1,10 @@
 import os
 import time
 
-from fabric.api import (reboot, env, sudo, runs_once, local,
-    settings, cd, run, roles, get, put, task)
+from fabric.api import (
+    reboot, env, sudo, runs_once, local,
+    settings, cd, run, roles, get, put
+)
 from fabric.contrib import files
 
 from bootstrapper.helpers import *
@@ -19,7 +21,6 @@ def minion(master, hostname, roles=()):
     upload_minion_config(master, roles)
 
 
-@task
 @requires_host
 def hostname(name='', fqdn=True):
     "Gets or sets the machine's hostname"
@@ -53,7 +54,7 @@ def create_minion_key(hostname, key_dir=None):
     """Geneates a minion key for the given hostname. It then downloads
     the minion keys to the local keys directory for use by
     grab_minion_key.
-    
+
     Must be run on the master host.
     """
     key_dir = key_dir or master_minions_dir()
@@ -78,7 +79,6 @@ def master():
     upload_master_config()
 
 
-@task
 @roles('master')
 def upload_master_config():
     "Uploads master config to the remote server and restarts the salt-master."
@@ -89,7 +89,6 @@ def upload_master_config():
     service('salt-master', 'start')
 
 
-@task
 @roles('minion')
 def upload_minion_config(master, roles=()):
     "Uploads the minion config to the remote server and restarts the salt-minion."

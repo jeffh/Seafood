@@ -3,7 +3,8 @@ from fabric.api import (reboot, env, sudo, cd, run, get, put, task)
 
 from bootstrapper.helpers import (silent, silent_remove, remove, chown, chmod, chgrp, git, brew_install)
 from bootstrapper.lowlevel.dispatchers import bootstrap
-from bootstrapper.lowlevel.utils import upload_key, config_template_upload
+from bootstrapper.lowlevel.utils import upload_key, config_template_upload, print_line
+
 
 def install_dmg(local_dmg, resource):
     silent_remove('/tmp/install.dmg')
@@ -20,9 +21,10 @@ def bootstrap_osx_homebrew(master, minion, upgrade):
     upload_key()
 
     # TODO: support env.salt_bleeding
-    if not silent('test -e /var/db/receipts/com.apple.pkg.DeveloperToolsCLI.bom'):
-        install_dmg('osx/xcode461_cltools_10_86938245a.dmg', 'Command Line Tools (Mountain Lion).mpkg')
+    print_line(' ~> Installing Command Line Tools')
+    install_dmg(env.osx['cli_dmg'], 'Command Line Tools (Mountain Lion).mpkg')
 
+    print_line(' ~> Installing Homebrew')
     remove('/tmp/homebrew')
     git.using(sudo)('clone', 'https://github.com/mxcl/homebrew.git', '/tmp/homebrew')
     sudo('rsync -axSH /tmp/homebrew/ /usr/local/')
@@ -32,24 +34,33 @@ def bootstrap_osx_homebrew(master, minion, upgrade):
     chown('root', '/usr/local/')
     chgrp('staff', '/usr/local/')
 
+    print_line(' ~> Installing Salt')
     brew_install('swig')
     brew_install('zmq')
-    brew_install('python')
-    run('pip install salt')
+    # install salt
+    sudo('pip install salt')
 
+    print_line(' ~> Increasing maxfiles limit to 10000')
     # increase max files limit (os default is 256...)
     # salt-masters need at least 2x the number of clients
     sudo('launchctl limit maxfiles 10000')
     context = dict(python=run('which python'),
-                   salt_master=run('which salt-master'),
-                   salt_minion=run('which salt-minion'))
+                   salt_master='/usr/local/share/python/salt-master',
+                   salt_minion='/usr/local/share/python/salt-minion')
 
+    print_line(' ~> Installing LaunchDaemons')
     if master:
-        config_template_upload('osx/org.saltstack.salt-master.plist', '/Library/LaunchDaemons/org.saltstack.salt-master.plist',
-                               context=None, use_sudo=True)
+        filename = '/Library/LaunchDaemons/org.saltstack.salt-master.plist'
+        config_template_upload('osx/org.saltstack.salt-master.plist', filename,
+                               context=context, use_sudo=True)
+        chown('root', filename)
+        chgrp('wheel', filename)
         sudo('launchctl load -w /Library/LaunchDaemons/org.saltstack.salt-master.plist')
     if minion:
-        config_template_upload('osx/org.saltstack.salt-minion.plist', '/Library/LaunchDaemons/org.saltstack.salt-minion.plist',
-                               context=None, use_sudo=True)
+        filename = '/Library/LaunchDaemons/org.saltstack.salt-minion.plist'
+        config_template_upload('osx/org.saltstack.salt-minion.plist', filename,
+                               context=context, use_sudo=True)
+        chown('root', filename)
+        chgrp('wheel', filename)
         sudo('launchctl load -w /Library/LaunchDaemons/org.saltstack.salt-minion.plist')
 
