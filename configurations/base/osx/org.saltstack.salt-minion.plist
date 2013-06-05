@@ -8,7 +8,8 @@
     <key>ProgramArguments</key>
     <array>
         <string>{{ python }}</string>
-        <string>{{ salt_minion }} --log-level=all</string>
+        <string>{{ salt_minion }}</string>
+        <string>--log-level=all</string>
     </array>
 
     <key>RunAtLoad</key>

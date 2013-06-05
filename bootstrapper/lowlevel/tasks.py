@@ -10,6 +10,9 @@ from fabric.contrib import files
 from bootstrapper.helpers import *
 from bootstrapper.config import CONFIG_DIR, SALT_DIR, master_minions_dir, minion_key_path, group
 from bootstrapper.lowlevel.utils import config_template_upload, salt_config_context, set_hostname
+from bootstrapper.lowlevel.dispatchers import restart_master, restart_minion
+import bootstrapper.lowlevel.osx
+import bootstrapper.lowlevel.linux
 
 
 @roles('minion')
@@ -44,7 +47,7 @@ def upload_minion_key(hostname, minion_key_dir=None):
         silent_remove(dest_file)
         move(hostname + ext, dest_file)
         chown('root', dest_file)
-        chgrp('root', dest_file)
+        chgrp(group(), dest_file)
     chmod(400, os.path.join(minion_key_dir, 'minion.pem'))
     chmod(644, os.path.join(minion_key_dir, 'minion.pub'))
 
@@ -67,7 +70,7 @@ def create_minion_key(hostname, key_dir=None):
     copy(key_name, hostname + '.pub') # copy the public key to download
     move(key_name + '.pem', hostname + '.pem') # move the private key to download
     chown(env.user, hostname + '.pem') # make sure we can download them
-    chown(env.user, hostname + '.pub')
+    chgrp(group(), hostname + '.pub')
     get(hostname + '.pem', os.path.join('keys', hostname + '.pem')) # download
     get(hostname + '.pub', os.path.join('keys', hostname + '.pub'))
 
@@ -83,10 +86,7 @@ def master():
 def upload_master_config():
     "Uploads master config to the remote server and restarts the salt-master."
     config_template_upload('master', '/etc/salt/master', context=salt_config_context())
-    service('salt-master', 'stop')
-    silent_sudo('pkill salt-master') # to ensure it gets killed
-    time.sleep(1)
-    service('salt-master', 'start')
+    restart_master()
 
 
 @roles('minion')
@@ -95,12 +95,7 @@ def upload_minion_config(master, roles=()):
     print 'Upload minion configuration'
     config_template_upload('minion', '/etc/salt/minion', context=salt_config_context(roles, master=master))
     print "Restart salt-minion"
-    service('salt-minion', 'stop; true')
-    silent_sudo('pkill salt-minion')
-    time.sleep(1)
-    service('salt-minion', 'start')
-
-
+    restart_minion()
 
 @requires_configuration
 def upload(sync=True):
@@ -119,7 +114,7 @@ def upload(sync=True):
             chown(env.user, dest)
             sync_dir(src, dest, exclude=['.*'])
             chown('root', dest)
-            chgrp('root', dest)
+            chgrp(group(), dest)
     if sync:
         salt('saltutil.refresh_pillar')
         salt('saltutil.sync_all')

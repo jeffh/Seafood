@@ -18,6 +18,9 @@ bootstrap = Dispatcher('bootstrap',
     doc="Bootstraps the salt minion/master to the given host."
 )
 
+restart_master = Dispatcher('restart_master', dispatch=is_platform)
+restart_minion = Dispatcher('restart_master', dispatch=is_platform)
+
 @purge_salt.register('apt-get')
 def purge_salt_with_apt():
     apt_remove('salt-master', 'salt-minion', 'salt-common')
@@ -38,3 +41,4 @@ def assign_hostname(*args, **kwargs):
 @bootstrap.after
 def perform_reboot(*args, **kwargs):
     reboot_if_required()
+
