@@ -1,0 +1,3 @@
+build-essential:
+    package:
+      - purged

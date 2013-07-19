@@ -8,7 +8,7 @@ monit:
             - package: monit
             - file: /etc/monit/monitrc
             - file: /etc/monit/conf.d/*
-            
+
 '/etc/monit/':
     file.directory:
         - user: root
@@ -17,7 +17,7 @@ monit:
         - order: 1
         - require:
             - package: monit
-        
+
 '/etc/monit/conf.d/':
     file.directory:
         - user: root
@@ -30,7 +30,7 @@ monit:
 
 '/etc/monit/monitrc':
     file.managed:
-        - source: salt://monit/monitrc
+        - source: salt://monit/files/monitrc
         - user: root
         - group: root
         - mode: 600

@@ -1,13 +1,12 @@
 *.pyc
+*.log
+.DS_Store
 configurations/*/states/users/keys/*
 configurations/*/states/external_files/*
-ksplice.sls
 passwords.sls
 configurations/**/fundamentals*
 configurations/net.jeffhui.net/*/top.sls
 keys/*
 bootstrapper/hosts.py
-sync.log
-
 /osx/
 /configurations/net.jeffhui/pillars/yacs/environment.sls

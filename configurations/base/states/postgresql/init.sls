@@ -30,7 +30,7 @@ postgresql:
         - source: salt://postgresql/files/monit.conf
         - template: jinja
         - defaults:
-            listen: {{ listen }}
+            listen: '{{ listen }}'
             port: {{ port }}
             pidfile: /var/run/postgresql/{{ version }}-main.pid
         - require:

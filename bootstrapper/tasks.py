@@ -145,6 +145,5 @@ def deploy(filter='*', upload=1, sync=1, debug=0):
         else:
             cmd = "salt {0!r} state.highstate".format(filter)
         with show('stdout', 'stderr'):
-            out = sudo(cmd, combine_stderr=True)
-            print_line(out)
+            sudo(cmd)
 

@@ -10,6 +10,7 @@ base:
         - salt.minion
         - vim.default
         - curl
+        - environment
     'roles:salt-master':
         - match: grain
         - salt.master

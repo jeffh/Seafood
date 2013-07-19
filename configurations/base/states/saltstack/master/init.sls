@@ -4,7 +4,7 @@
 '/etc/monit/conf.d/salt-master.conf':
     optional_file.managed:
         - onlyif: '[ -e /etc/monit/conf.d/ ]'
-        - source: salt://salt-master/monit.conf
+        - source: salt://saltstack/master/files/monit.conf
         - user: root
         - group: root
         - template: jinja

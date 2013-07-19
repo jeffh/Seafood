@@ -4,7 +4,7 @@
 # All the parameters listed here are optional and have defaults
 postgres:
     version: 9.1
-    listen: '\*'
+    listen: '*'
     port: 5432
     max_connections: 100
     unix_socket: /var/run/postgresql
@@ -22,9 +22,8 @@ postgres:
     default_statistics_target: 100
     synchronous_commit: on
     random_page_cost: 4.0
-
-postgres_hbas:
-    # type  db  user [address] method
-    - host  all all 127.0.0.1/32 md5
-    - host  all all ::1/128      md5
-    - 'host  all all 192.168.0.0/16 md5'
+    hbas:
+        # type  db  user [address] method
+        - 'host  all all 127.0.0.1/32 md5'
+        - 'host  all all ::1/128      md5'
+        - 'host  all all 192.168.0.0/16 md5'

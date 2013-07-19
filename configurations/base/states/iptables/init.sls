@@ -28,7 +28,7 @@ iptables:
 
 '/etc/network/if-up.d/iptables':
     file.managed:
-        - source: salt://iptables/startup.sh
+        - source: salt://iptables/files/startup.sh
         - user: root
         - group: root
         - template: jinja
@@ -38,4 +38,4 @@ iptables:
         - require:
             - package: iptables
             - iptables: iptables
-    
+

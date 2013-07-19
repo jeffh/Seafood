@@ -7,7 +7,7 @@ syslog:
         - watch:
             - package: syslog
             - file: '/etc/rsyslog.d/*'
-    
+
 '/etc/rsyslog.d/':
     file.directory:
         - user: root

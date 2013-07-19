@@ -59,7 +59,7 @@ gitolite-update:
 
 '{{ home }}/.gitolite.rc':
     file.managed:
-        - source: salt://gitolite/gitolite.rc
+        - source: salt://gitolite/files/gitolite.rc
         - user: {{ username }}
         - group: {{ username }}
         - mode: 644
