@@ -8,7 +8,7 @@ Here is an example of how to set up a salt configuration system. It includes:
 - Customizable configurations for different groups of systems
    (ie - raspberrypis are on a separate network to other systems)
 
-As well as a reference for some moderate tasks:
+As well as a reference for some moderately difficult tasks:
 
 - How to use pillars
 - How to write your own modules
@@ -76,7 +76,7 @@ Let's break this command down:
 
 Also, if you want to ``apt-get upgrade`` while bootstrapping, you can pass the upgrade=1 argument to setup_master::
 
-	fab include:net.jeffhui.net roles:yacs,evernything deploy_host setup_master:upgrade=1
+	fab include:net.jeffhui.net roles:yacs,everything deploy_host setup_master:upgrade=1
 
 All good? Let's deploy a salt minion on another machine::
 
@@ -125,6 +125,13 @@ download all versions use::
 
     fab download_external_files:everything=True
 
+---
+OSX
+---
+
+For OSX, you'll need to download Apple's Command Line Tools DMG in order
+to bootstrap a system. It needs to reside in ./osx/xcode462_cltools_10_86938259a.dmg
+
 -----------
 Development
 -----------
@@ -137,4 +144,4 @@ Alternatively, you can provide a hash of the official git repository to use (def
 
     fab include:net.jeffhui roles:yacs,everything deploy_host develop:'master' setup_master
 
-Currently, this feature isn't available when deploying to OSX.
+Currently, this feature experimental and shouldn't be relied upon.
