@@ -4,9 +4,8 @@
 configurations/*/states/users/keys/*
 configurations/*/states/external_files/*
 passwords.sls
-configurations/**/fundamentals*
-configurations/net.jeffhui.net/*/top.sls
 keys/*
 bootstrapper/hosts.py
 /osx/
-/configurations/net.jeffhui/pillars/yacs/environment.sls
+configurations/net.jeffhui/pillars/yacs/upstream.sls
+configurations/net.jeffhui/pillars/yacs/environment.sls

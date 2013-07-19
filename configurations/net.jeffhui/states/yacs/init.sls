@@ -1,11 +1,4 @@
 include:
-    - nginx
-    - memcached
-    - memcached.dev
-    - coffeescript
-    - postgresql
-    - postgresql.dev
-    - java.core
-    - pip
-    - virtualenv
-    - yacs.core
+    - yacs.proxy
+    - yacs.database
+    - yacs.web
