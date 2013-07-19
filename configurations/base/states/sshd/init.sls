@@ -23,13 +23,12 @@ sshd:
 '/etc/monit/conf.d/sshd.conf':
     optional_file.managed:
         - onlyif: '[ -e /etc/monit/conf.d/ ]'
-        - source: salt://sshd/files/monit.conf
+        - source: salt://monit/files/conf.d/basic.conf.template
         - user: root
         - group: root
         - template: jinja
         - defaults:
-            service_name: {{ salt['pillar.get']('packages:sshd:service', 'ssh') }}
-            port: {{ salt['pillar.get']('sshd:port', 22) }}
+            name: {{ salt['pillar.get']('packages:sshd:service', 'ssh') }}
             pidfile: {{ salt['pillar.get']('sshd:pid_file', '/var/run/sshd.pid') }}
         - require:
             - package: sshd

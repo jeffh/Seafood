@@ -17,15 +17,12 @@ nginx:
 '/etc/monit/conf.d/nginx.conf':
     optional_file.managed:
         - onlyif: '[ -e /etc/monit/conf.d/ ]'
-        - source: salt://nginx/files/monit.conf
+        - source: salt://monit/files/conf.d/basic.conf.template
         - user: root
         - group: root
         - template: jinja
         - defaults:
-            service_name: {{ salt['pillar.get']('pillar:nginx:service_name', 'nginx') }}
-            ports:
-                - number: 80
-                  ssl: False
+            name: {{ salt['pillar.get']('pillar:nginx:service_name', 'nginx') }}
             pidfile: /var/run/nginx.pid
 
 '/usr/share/nginx/www/':
@@ -37,13 +34,13 @@ nginx:
             - user: www-data
             - group: www-data
             - package: nginx
-            
+
 '/etc/nginx/sites-available':
     file:
         - absent
         - require:
             - package: nginx
-            
+
 '/etc/nginx/':
     file.directory:
         - user: root
@@ -51,7 +48,7 @@ nginx:
         - file_mode: 755
         - require:
             - package: nginx
-            
+
 '/etc/nginx/sites-enabled/':
     file.directory:
         - user: root

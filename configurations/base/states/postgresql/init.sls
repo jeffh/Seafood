@@ -27,11 +27,10 @@ postgresql:
 '/etc/monit/conf.d/postgresql.conf':
     optional_file.managed:
         - onlyif: '[ -d "/etc/monit/conf.d/" ]'
-        - source: salt://postgresql/files/monit.conf
+        - source: salt://monit/files/conf.d/basic.conf.template
         - template: jinja
         - defaults:
-            listen: '{{ listen }}'
-            port: {{ port }}
+            name: postgresql
             pidfile: /var/run/postgresql/{{ version }}-main.pid
         - require:
             - package: postgresql

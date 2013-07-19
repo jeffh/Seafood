@@ -1,0 +1,4 @@
+check process monit with pidfile {{ pidfile }}
+    start program = "{{ pillar['service'] }} {{ name }} start"
+    stop program = "{{ pillar['service'] }} {{ name }} stop"
+    if 5 restarts within 5 cycles then timeout

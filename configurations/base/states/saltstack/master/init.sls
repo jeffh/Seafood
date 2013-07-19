@@ -4,15 +4,12 @@
 '/etc/monit/conf.d/salt-master.conf':
     optional_file.managed:
         - onlyif: '[ -e /etc/monit/conf.d/ ]'
-        - source: salt://saltstack/master/files/monit.conf
+        - source: salt://monit/files/conf.d/basic.conf.template
         - user: root
         - group: root
         - template: jinja
         - defaults:
-            service_name: {{ pillar['packages'].get('salt-master', {}).get('service', 'salt-master') }}
-            ports:
-                - {{ pillar['salt-master']['pub_port'] }}
-                - {{ pillar['salt-master']['ret_port'] }}
+            name: {{ pillar['packages'].get('salt-master', {}).get('service', 'salt-master') }}
             pidfile: /var/run/salt-master.pid
 
 '/etc/ufw/applications.d/salt.ufw':

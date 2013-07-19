@@ -33,12 +33,10 @@ mumble-server:
 '/etc/monit/conf.d/mumble-server.conf':
     optional_file.managed:
         - onlyif: '[ -e /etc/monit/conf.d/ ]'
-        - source: salt://mumble-server/files/monit.conf
+        - source: salt://monit/files/conf.d/basic.conf.template
         - user: root
         - group: root
         - template: jinja
         - defaults:
-            listen: {{ listen }}
-            port: {{ port }}
-            service_name: {{ pillar['packages'].get('mumble-server', {}).get('service', 'mumble-server') }}
+            name: {{ pillar['packages'].get('mumble-server', {}).get('service', 'mumble-server') }}
             pidfile: /var/run/mumble-server
