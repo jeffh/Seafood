@@ -8,4 +8,4 @@ include:
     - java.core
     - pip
     - virtualenv
-    - yacs
+    - yacs.core
