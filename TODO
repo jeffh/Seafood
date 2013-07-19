@@ -1,5 +1,4 @@
 Things that can be improved:
- - Make KSplice support more than debian/ubuntu OSes
  - Finish PHP support
  - Finish HG support
  - Fix/Remove golang

@@ -1,6 +1,11 @@
+import time
 from fabric.api import (env, sudo)
 
-from bootstrapper.helpers import (remove, chown, chmod, chgrp, git, apt_update, apt_upgrade, has)
+from bootstrapper.helpers import (
+    remove, chown, chmod,
+    chgrp, git, apt_update,
+    apt_upgrade, has, silent_sudo
+)
 from bootstrapper.lowlevel.dispatchers import bootstrap, restart_master, restart_minion
 from bootstrapper.lowlevel.utils import reboot_if_required, upload_key
 

@@ -1,0 +1,3 @@
+unattended-upgrades:
+    package:
+        - purged

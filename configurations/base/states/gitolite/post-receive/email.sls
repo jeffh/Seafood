@@ -7,7 +7,7 @@ include:
 {% set home = user.get('home', '/home/git') %}
 '{{ home }}/.gitolite/hooks/common/post-receive':
     file.managed:
-        - source: salt://gitolite/post-receive/email.hook
+        - source: salt://gitolite/files/post-receive/email.hook
         - user: {{ username }}
         - group: {{ username }}
         - mode: 644
