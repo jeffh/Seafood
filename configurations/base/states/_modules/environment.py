@@ -6,6 +6,8 @@ def read(path='/etc/environment'):
 
         result = dict(read_environment())
         result['PATH'] # => returns bin path
+
+    But you may lose some variables that may append to itself.
     """
     result = []
     with open(path, 'r') as handle:
