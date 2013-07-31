@@ -1,16 +1,23 @@
 {
-    "elasticsearch": [
-        {
-            "url": "http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.20.3.deb",
-            "path": "configurations/base/states/external_files/elasticsearch/0.20.3.deb",
-            "sha256": "8f0c113ed904c4338421d87ff3567b8f75bbef9bc0844ee8aa0cec96d1b729fd"
-        }
-    ],
-    "jenkins-ci.org.key": [
-        {
-            "url": "http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key",
-            "path": "configurations/base/states/external_files/jenkins/jenkins-ci.org.key",
-            "sha256": "d21585f44b10fefbd677ce0f0d2a1010ad01f0430a0e0a9c032d01e8a05fba41"
-        }
-    ]
+	"elasticsearch": [
+		{
+			"url": "http://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.20.3.deb",
+			"path": "configurations/base/states/external_files/elasticsearch/0.20.3.deb",
+			"sha256": "8f0c113ed904c4338421d87ff3567b8f75bbef9bc0844ee8aa0cec96d1b729fd"
+		}
+	],
+	"jenkins-ci.org.key": [
+		{
+			"url": "http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key",
+			"path": "configurations/base/states/external_files/jenkins/jenkins-ci.org.key",
+			"sha256": "d21585f44b10fefbd677ce0f0d2a1010ad01f0430a0e0a9c032d01e8a05fba41"
+		}
+	],
+	"docker": [
+		{
+			"url": "http://get.docker.io",
+			"path": "configurations/base/states/external_files/docker/install.sh",
+			"sha256": "49f44294c1a87c5d84b271dec543eba5c4f016ecf9f59ccc528babdc88731bd4"
+		}
+	]
 }

@@ -18,8 +18,8 @@ base:
         - match: grain
         - gitolite
         - gitolite.post-receive.email
-    'G@roles:yacs':
-        - match: compound
+    'roles:yacs':
+        - match: grain
         - yacs
     'os:(Ubuntu|Debian)':
         - match: grain_pcre
