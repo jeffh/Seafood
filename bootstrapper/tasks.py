@@ -22,7 +22,6 @@ def delete_salt():
     return lowlevel.purge_salt()
 
 @task
-@parallel
 @requires_host
 def reboot():
     print_line("Rebooting")

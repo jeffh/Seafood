@@ -25,7 +25,7 @@ def minion(master, hostname, roles=()):
 
 
 @requires_host
-def hostname(name='', fqdn=True):
+def hostname(name='', fqdn=False):
     "Gets or sets the machine's hostname"
     if name:
         set_hostname(name)
