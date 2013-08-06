@@ -24,5 +24,8 @@ ufw:
         - name: "yes | ufw reset && ufw enable && ufw app list | grep '^ .*$' | while read app; do ufw allow \"$app\"; done"
         - unless: "diff <(ufw status | grep -v '(v6)'  | grep ALLOW | sed 's/ *ALLOW.*//g') <(ufw app list | grep '^ ' | sed -e 's/^[ \t]*//g')"
         - shell: /bin/bash
+        - require:
+            - package: ufw
         - watch:
+            - package: *
             - file: '/etc/ufw/applications.d'

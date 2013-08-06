@@ -7,13 +7,13 @@ base:
         - syslog
         - ufw
         - monit
-        - salt.minion
+        - saltstack.minion
         - vim.default
         - curl
         - environment
     'roles:salt-master':
         - match: grain
-        - salt.master
+        - saltstack.master
     'roles:gitolite':
         - match: grain
         - gitolite
