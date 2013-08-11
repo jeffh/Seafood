@@ -7,8 +7,8 @@
 
     <key>ProgramArguments</key>
     <array>
-        <string>{{ python }}</string>
-        <string>{{ salt_minion }}</string>
+        <string>/usr/local/bin/python</string>
+        <string>/usr/local/bin/salt-minion</string>
         <string>--log-level=all</string>
     </array>
 

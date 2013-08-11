@@ -179,7 +179,7 @@ file_roots:
 #
 pillar_roots:
   base:
-    {% for config in configs %}- {{ saltfiles }}{{ config }}/pillars
+    {% for config in configs %}- {{ salt_data_dir }}{{ config }}/pillars
     {% endfor %}
 
 #ext_pillar:

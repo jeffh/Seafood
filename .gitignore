@@ -9,3 +9,5 @@ bootstrapper/hosts.py
 /osx/
 configurations/net.jeffhui/pillars/yacs/upstream.sls
 configurations/net.jeffhui/pillars/yacs/environment.sls
+.ropeproject
+.vagrant

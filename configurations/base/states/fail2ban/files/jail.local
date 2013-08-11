@@ -1,0 +1,25 @@
+[DEFAULT]
+# a space delimited list of IP addresses, CIDR prefixes, or DNS hostnames
+# to bypass fail2ban protection
+ignoreip = {{ ' '.join(whitelist) }}
+
+# number of seconds during which a client host is blocked
+bantime = {{ ban_time }}
+
+# number of failures before a client host is blocked
+maxretry = {{ max_retries }}
+
+# number of seconds within which "maxentry" failures result in banning
+findtime = {{ find_time }}
+
+mta = sendmail
+
+[ssh-iptables]
+enabled = true
+filter = sshd
+action = iptables[name=SSH, port=ssh, protocol=tcp]
+sendmail-whois[name=SSH, dest={{ email.receiver }}, sender={{ email.sender }}]
+logpath = /var/log/auth.log
+# ssh-specific max-retry threshold
+maxretry = {{ max_retries }}
+logpath=/var/log/secure
