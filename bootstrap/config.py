@@ -12,11 +12,9 @@ class Configuration(object):
                 return filepath
         raise TypeError('Could not find {0} to upload in any configuration!'.format(repr(filename)))
 
-class Settings(object):
-    "API for accessing the config.yml file"
-    def __init__(self, data, platform='linux'):
+class FileSettings(object):
+    def __init__(self, data):
         self.data = data
-        self.platform = platform
 
     @classmethod
     def from_yaml(cls, filepath):
@@ -29,6 +27,38 @@ class Settings(object):
         import json
         with open(filepath) as handle:
             return cls(json.loads(handle.read()))
+
+
+class Servers(FileSettings):
+    def __init__(self, data):
+        self.data = data
+
+    def items(self):
+        return self.servers.items()
+
+    def __getitem__(self, key):
+        return self.servers[key]
+
+    @property
+    def servers(self):
+        data = {}
+        for name, server in self.data['servers'].items():
+            data[name] = {}
+            data[name].update(server)
+            data[name]['name'] = name
+        return data
+
+    def roles_for_server(self, server_name):
+        return tuple(self[server_name].get('roles', ()))
+
+    def configuration_for_server(self, server_name):
+        return Configuration(tuple(self[server_name].get('configurations', ())))
+
+class Settings(FileSettings):
+    "API for accessing the config.yml file"
+    def __init__(self, data, platform='linux'):
+        super(Settings, self).__init__(data)
+        self.platform = platform
 
     def as_platform(self, platform):
         return self.__class__(self.data, platform)
@@ -61,15 +91,6 @@ class Settings(object):
         return tuple(self.data['bootstrap']['os-detectors'])
 
     @property
-    def servers(self):
-        data = {}
-        for name, server in self.data['servers'].items():
-            data[name] = {}
-            data[name].update(server)
-            data[name]['name'] = name
-        return data
-
-    @property
     def salt_data_dir(self):
         return self.data['salt-master']['data-dir']
 
@@ -80,9 +101,3 @@ class Settings(object):
     @property
     def salt_minion_roles(self):
         return tuple(self.data['salt-minion']['base-roles'])
-
-    def roles_for_server(self, server_name):
-        return tuple(self.servers[server_name].get('roles', ()))
-
-    def configuration_for_server(self, server_name):
-        return Configuration(tuple(self.servers[server_name].get('configurations', ())))

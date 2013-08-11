@@ -1,9 +1,9 @@
 import os
 
-from fabric.api import sudo, task, put, get, env, run
+from fabric.api import sudo, task, put, get, env, run, local
 from fabric.contrib import files
 
-from bootstrap.config import Settings, Configuration
+from bootstrap.config import Settings, Servers
 from bootstrap.utils import (
     group, boolean, open_file, get_operating_system, get_config,
     generate_server_names_as_tasks
@@ -11,17 +11,20 @@ from bootstrap.utils import (
 
 env.passwords = {}
 env.servers = {}
-settings = Settings.from_yaml('config.yml')
+settings = Settings.from_yaml('settings/settings.yml')
+servers = Servers.from_yaml('settings/servers.yml')
 
-generate_server_names_as_tasks(settings.servers, globals())
+generate_server_names_as_tasks(servers, globals())
+
 
 @task
 def upload_key(name='~/.ssh/id_rsa.pub'):
+    "Uploads your SSH public key to the host to allow ppk-based authentication"
     local_key = os.path.expandvars(os.path.expanduser(local_key))
     user = env.user
-    config = get_config(settings)
+    config = get_config(servers)
 
-    home = silent_sudo('pwd').strip()
+    home = sudo('pwd').strip()
     ssh_dir = os.path.join(home, '.ssh')
     sudo('mkdir -p {0!r}; true'.format(ssh_dir))
     sudo('chmod -R 777 {0!r}'.format(ssh_dir))
@@ -31,12 +34,17 @@ def upload_key(name='~/.ssh/id_rsa.pub'):
     sudo('chown -R {0!r} {1!r}'.format(user, ssh_dir))
     sudo('chgrp -R {0!r} {1!r}'.format(group(), ssh_dir))
 
+
 def bootstrap_salt(master=True, minion=True, syndic=False, upgrade=True, version='stable'):
+    """Bootstraps the remote system with salt installed.
+
+    By default the stable version of salt is installed.
+    """
     master = boolean(master)
     minion = boolean(minion)
     upgrade = boolean(upgrade)
 
-    config = get_config(settings)
+    config = get_config(servers)
     opsys = get_operating_system(settings.os_detectors)
     boot = settings.bootstrap_for_operating_system(opsys)
 
@@ -46,9 +54,11 @@ def bootstrap_salt(master=True, minion=True, syndic=False, upgrade=True, version
     sudo('mkdir -p {tmp_dir}'.format(tmp_dir=tmp_dir))
     sudo('chmod -R 777 {tmp_dir}'.format(tmp_dir=tmp_dir))
     bootstrap_script = os.path.join(tmp_dir, 'bootstrap.sh')
-    put(open_file(boot['script'], config), bootstrap_script)
+    with open_file(boot['script'], config) as handle:
+        put(handle, bootstrap_script)
     for filepath in boot['files']:
-        put(open_file(filepath, config), os.path.join(tmp_dir, os.path.basename(filepath)))
+        with open_file(filepath, config) as handle:
+            put(handle, os.path.join(tmp_dir, os.path.basename(filepath)))
     sudo('chmod +x {0}'.format(bootstrap_script))
 
     args = []
@@ -69,8 +79,14 @@ def bootstrap_salt(master=True, minion=True, syndic=False, upgrade=True, version
         args=' '.join(map(repr, args)),
     ))
 
+
 @task
 def create_minion_key(hostname):
+    """Used on the salt-master to generate ppk for a minion with the given hostname.
+
+    The public and private keys are then downloaded from the master to the local
+    keys directory.
+    """
     context = dict(
         hostname=hostname,
         key_dir=settings.master_minion_keys_dir,
@@ -92,6 +108,8 @@ def create_minion_key(hostname):
 
 @task
 def upload_keys_to_minion(hostname):
+    """Uploads the local keys of the given hostname to the remote host (minion).
+    """
     context = dict(
         hostname=hostname,
         key_dir=settings.minion_keys_dir,
@@ -117,19 +135,37 @@ def upload_keys_to_minion(hostname):
     sudo('chmod 400 {key_dir}/{hostname}.pub'.format(**context))
     sudo('chmod 644 {key_dir}/{hostname}.pem'.format(**context))
 
-@task
-def setup_minion(master_address, upgrade=0, no_bootstrap=False):
-    upgrade = boolean(upgrade)
 
-    bootstrap_salt(master=False, minion=True, upgrade=upgrade)
+@task
+def setup_minion(minion_to_master, master_name, bootstrap=True):
+    """Sets up the minion to point to a given master.
+
+    minion_to_master:
+        The address the minion uses to connect to the salt master.
+    master_name:
+        The fabric hostname task or host string for fabric to connect to the salt master.
+    bootstrap:
+        Set to False to skip bootstrapping salt. Defaults to True.
+    """
+    bootstrap = boolean(bootstrap)
+    create_minion_key = boolean(create_minion_key)
+
+    name = hostname()
+    local('fab {master_name} create_minion_key:{name}'.format(
+        master_name=master_name,
+        name=name,
+    ))
+    upload_keys_to_minion(name)
+
+    bootstrap_salt(master=False, minion=True)
     server_name = env.servers[env.host_string]['name']
     # upload minion config
-    config = get_config(settings)
+    config = get_config(servers)
     master_config = config.find_file('minion')
     context = dict(
         salt_data_dir=settings.salt_data_dir,
         configs=config.names,
-        roles=settings.salt_minion_roles + settings.roles_for_server(server_name),
+        roles=settings.salt_minion_roles + servers.roles_for_server(server_name),
         master=master_address,
     )
     sudo('mkdir -p {salt_data_dir}; true'.format(**context))
@@ -137,11 +173,15 @@ def setup_minion(master_address, upgrade=0, no_bootstrap=False):
 
 
 @task
-def setup_master(and_minion=1, upgrade=0):
-    and_minion = boolean(and_minion)
-    upgrade = boolean(upgrade)
+def setup_master(and_minion=True):
+    """Sets up the master.
 
-    bootstrap_salt(master=True, minion=and_minion, upgrade=upgrade)
+    and_minion:
+        Sets up a minion to point to the master (itself). Defaults to True.
+    """
+    and_minion = boolean(and_minion)
+
+    bootstrap_salt(master=True, minion=and_minion)
     # upload master config
     server_name = env.servers[env.host_string]['name']
     config = settings.configuration_for_server(server_name)
@@ -149,16 +189,14 @@ def setup_master(and_minion=1, upgrade=0):
     context = dict(
         salt_data_dir=settings.salt_data_dir,
         configs=config.names,
-        roles=settings.salt_master_roles + settings.roles_for_server(server_name),
+        roles=settings.salt_master_roles + servers.roles_for_server(server_name),
     )
     sudo('mkdir -p {salt_data_dir}; true'.format(**context))
     files.upload_template(master_config, os.path.join(context['salt_data_dir'], 'master'), context=context, use_jinja=True, use_sudo=True)
 
     if and_minion:
-        name = hostname()
-        create_minion_key(name)
-        upload_keys_to_minion(name)
-        setup_minion(upgrade=False, no_bootstrap=True)
+        setup_minion('127.0.0.1', env.host_string, bootstrap=False)
+
 
 @task
 def hostname(name='', fqdn=False):

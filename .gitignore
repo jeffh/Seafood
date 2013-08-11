@@ -11,3 +11,4 @@ configurations/net.jeffhui/pillars/yacs/upstream.sls
 configurations/net.jeffhui/pillars/yacs/environment.sls
 .ropeproject
 .vagrant
+settings/servers.yml
