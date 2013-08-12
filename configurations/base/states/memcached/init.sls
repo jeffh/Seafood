@@ -6,7 +6,7 @@ memcached:
     package:
         - installed
     service.running:
-        - enabled: true
+        - enable: true
         - watch:
             - package: memcached
             - file: /etc/memcached.conf

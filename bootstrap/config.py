@@ -5,12 +5,25 @@ class Configuration(object):
     def __init__(self, names=()):
         self.names = tuple(names)
 
+    @property
+    def paths(self):
+        return tuple(self.names)
+
+    @property
+    def salt_data_dirs(self):
+        paths = []
+        for path in self.paths:
+            paths.append(os.path.join(path, 'states'))
+            paths.append(os.path.join(path, 'pillars'))
+        return paths
+
     def find_file(self, relpath):
         for name in reversed(self.names):
             filepath = os.path.relpath(os.path.join('configurations', name, relpath))
             if os.path.exists(filepath):
                 return filepath
         raise TypeError('Could not find {0} to upload in any configuration!'.format(repr(filename)))
+
 
 class FileSettings(object):
     def __init__(self, data):
@@ -53,6 +66,7 @@ class Servers(FileSettings):
 
     def configuration_for_server(self, server_name):
         return Configuration(tuple(self[server_name].get('configurations', ())))
+
 
 class Settings(FileSettings):
     "API for accessing the config.yml file"

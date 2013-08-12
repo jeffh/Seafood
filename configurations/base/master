@@ -138,7 +138,7 @@
 # require a dedicated port.
 file_roots:
   base:
-    {% for config in configs %}- {{ saltfiles }}{{ config }}/states
+    {% for config in configs %}- {{ salt_data_dir }}{{ config }}/states
     {% endfor %}
 
 # The file server works on environments passed to the master, each environment

@@ -27,5 +27,5 @@ ufw:
         - require:
             - package: ufw
         - watch:
-            - package: *
+            - package: '*'
             - file: '/etc/ufw/applications.d'

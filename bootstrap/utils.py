@@ -2,9 +2,32 @@ import os
 from StringIO import StringIO
 from urlparse import urlparse
 from urllib2 import urlopen
+from functools import wraps
 
-from fabric.api import settings, hide, sudo, env, task
+from fabric.api import settings, hide, sudo, env, task, puts
+from fabric.contrib.project import rsync_project
 import requests
+
+
+class WithStringIO(StringIO):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        return self
+
+def sync_dir(local_dir, remote_dir, exclude=()):
+    "Syncs a local directory to a remote directory"
+    if not local_dir.endswith('/'):
+        local_dir += '/'
+    puts('rsync {0} => {1}'.format(local_dir, remote_dir))
+    with settings(hide('warnings', 'stdout', 'stderr')):
+        rsync_project(
+            remote_dir=remote_dir,
+            local_dir=local_dir,
+            exclude=('.git', '*.pyc', '*.pyo') + tuple(exclude),
+            delete=True,
+        )
 
 def silent(cmd):
     "Returns the given command without printing stdout or stderr."
@@ -30,6 +53,13 @@ def group():
     if is_darwin:
         group = 'staff'
     return group
+
+def check_for_sudo(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        silent_sudo('echo test')
+        return fn(*args, **kwargs)
+    return wrapper
 
 def get_config(servers):
     "Gets the Configuration instance for the current server."
@@ -63,9 +93,9 @@ def open_file(url, configuration):
     if scheme in ('file', ''):
         return open(uri.path)
     if scheme == 'salt':
-        return open(configuration.find_find(uri.netloc + uri.path))
+        return open(configuration.find_file(uri.netloc + uri.path))
     if scheme in ('http', 'https'):
-        return StringIO(requests.get(url).text)
+        return WithStringIO(requests.get(url).text)
     raise TypeError('Cannot open url: ' + repr(url))
 
 

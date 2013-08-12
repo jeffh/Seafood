@@ -67,7 +67,6 @@ if [ "$VERSION" == "git" ]; then
 fi
 
 function install_cltools {
-    install_dmg 'Command Line Tools (Mountain Lion).mpkg'
     hdiutil mount 'xcode462_cltools_10_86938259a.dmg'
     volume="/Volumes/Command Line Tools (Mountain Lion)"
     installer -pkg "$volume/Command Line Tools (Mountain Lion).mpkg" -target /
@@ -77,11 +76,12 @@ function install_cltools {
 function install_homebrew {
     rm -rf /tmp/homebrew
     git clone https://github.com/mxcl/homebrew /tmp/homebrew
+    rsync -axSH /tmp/homebrew/ /usr/local/
     (
         cd /usr/local/
         git clean -fd
     )
-    chmod -R 755 /usr/local/
+    chmod -R 777 /usr/local/
     chown -R root /usr/local/
     chgrp -R staff /usr/local/
 }
@@ -91,18 +91,19 @@ function install_dependencies {
     mkdir -p /var/cache/salt/master; true
     mkdir -p /var/cache/salt/minion; true
 
-    brew install swig
-    brew install zmq
-    brew install python
+    BREW=/usr/local/bin/brew
+    $BREW install swig
+    $BREW install zmq
+    $BREW install python
 }
 
 function setup_salt {
     if [ "$VERSION" == "stable" ]; then
         $PIP install salt
     elif [ "$VERSION" == "develop"]; then
-        $PIP install "git+${GITURL}#egg=salt"
+        $PIP install "git+${GITURL}@develop#egg=salt"
     elif [ "$GITREF" ]; then
-        $PIP install "git+${GITURL}#egg=salt"
+        $PIP install "git+${GITURL}@${GITREF}#egg=salt"
     fi
 
     # increase max file descriptor limit
@@ -130,6 +131,7 @@ function setup_minion {
 function main {
     install_cltools
     install_homebrew
+    install_dependencies
     setup_salt
     if [ "$MASTER" ]; then
         setup_master

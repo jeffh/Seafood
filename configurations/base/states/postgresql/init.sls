@@ -5,7 +5,7 @@ postgresql:
     package.installed:
         - name: postgresql-{{ version }}
     service.running:
-        - enabled: true
+        - enable: true
         - watch:
             - package: postgresql
             - file: '/etc/postgresql/{{ version }}/main/*'

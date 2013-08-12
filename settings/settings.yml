@@ -23,9 +23,9 @@ bootstrap:
             tmp: /tmp/
             script: 'https://raw.github.com/saltstack/salt-bootstrap/develop/bootstrap-salt.sh'
             start-master: service salt-master start
-            stop-master: service salt-master stop
+            stop-master: 'service salt-master stop; true'
             start-minion: service salt-minion start
-            stop-minion: service salt-minion stop
+            stop-minion: 'service salt-minion stop; true'
         osx:
             tmp: /tmp/
             script: 'bootstrap/scripts/osx.sh'

@@ -2,7 +2,7 @@ monit:
     package.installed:
         - order: 1
     service.running:
-        - enabled: true
+        - enable: true
         - order: last
         - watch:
             - package: monit

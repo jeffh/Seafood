@@ -6,11 +6,12 @@ from fabric.contrib import files
 from bootstrap.config import Settings, Servers
 from bootstrap.utils import (
     group, boolean, open_file, get_operating_system, get_config,
-    generate_server_names_as_tasks
+    generate_server_names_as_tasks, sync_dir, check_for_sudo,
 )
 
 env.passwords = {}
 env.servers = {}
+env.just_bootstrapped = False
 settings = Settings.from_yaml('settings/settings.yml')
 servers = Servers.from_yaml('settings/servers.yml')
 
@@ -18,9 +19,10 @@ generate_server_names_as_tasks(servers, globals())
 
 
 @task
+@check_for_sudo
 def upload_key(name='~/.ssh/id_rsa.pub'):
     "Uploads your SSH public key to the host to allow ppk-based authentication"
-    local_key = os.path.expandvars(os.path.expanduser(local_key))
+    local_key = os.path.expandvars(os.path.expanduser(name))
     user = env.user
     config = get_config(servers)
 
@@ -81,6 +83,7 @@ def bootstrap_salt(master=True, minion=True, syndic=False, upgrade=True, version
 
 
 @task
+@check_for_sudo
 def create_minion_key(hostname):
     """Used on the salt-master to generate ppk for a minion with the given hostname.
 
@@ -96,7 +99,8 @@ def create_minion_key(hostname):
     sudo('rm -f {hostname}.pem; true'.format(**context))
     sudo('rm -f {hostname}.pub; true'.format(**context))
 
-    sudo('cp {key_dir}/{hostname}.pub {key_dir}/{hostname}'.format(**context))
+    sudo('cp -f {key_dir}/{hostname}.pub {key_dir}/{hostname}'.format(**context))
+    sudo('chmod 622 {key_dir}/{hostname}'.format(**context))
 
     sudo('mv {key_dir}/{hostname}.pem {hostname}.pem'.format(**context))
     sudo('mv {key_dir}/{hostname}.pub {hostname}.pub'.format(**context))
@@ -107,6 +111,7 @@ def create_minion_key(hostname):
 
 
 @task
+@check_for_sudo
 def upload_keys_to_minion(hostname):
     """Uploads the local keys of the given hostname to the remote host (minion).
     """
@@ -125,19 +130,20 @@ def upload_keys_to_minion(hostname):
     put(os.path.join('keys', hostname + '.pem'))
     put(os.path.join('keys', hostname + '.pub'))
 
-    sudo('mv -f {hostname}.pub {key_dir}/{hostname}.pub'.format(**context))
-    sudo('mv -f {hostname}.pem {key_dir}/{hostname}.pem'.format(**context))
+    sudo('mv -f {hostname}.pub {key_dir}/minion.pub'.format(**context))
+    sudo('mv -f {hostname}.pem {key_dir}/minion.pem'.format(**context))
 
-    sudo('chown {user} {key_dir}/{hostname}.pub'.format(**context))
-    sudo('chown {user} {key_dir}/{hostname}.pem'.format(**context))
-    sudo('chgrp {group} {key_dir}/{hostname}.pub'.format(**context))
-    sudo('chgrp {group} {key_dir}/{hostname}.pem'.format(**context))
-    sudo('chmod 400 {key_dir}/{hostname}.pub'.format(**context))
-    sudo('chmod 644 {key_dir}/{hostname}.pem'.format(**context))
+    sudo('chown {user} {key_dir}/minion.pub'.format(**context))
+    sudo('chown {user} {key_dir}/minion.pem'.format(**context))
+    sudo('chgrp {group} {key_dir}/minion.pub'.format(**context))
+    sudo('chgrp {group} {key_dir}/minion.pem'.format(**context))
+    sudo('chmod 400 {key_dir}/minion.pub'.format(**context))
+    sudo('chmod 644 {key_dir}/minion.pem'.format(**context))
 
 
 @task
-def setup_minion(minion_to_master, master_name, bootstrap=True):
+@check_for_sudo
+def setup_minion(minion_to_master, master_name, bootstrap=True, upgrade=True, restart_service=True):
     """Sets up the minion to point to a given master.
 
     minion_to_master:
@@ -148,7 +154,6 @@ def setup_minion(minion_to_master, master_name, bootstrap=True):
         Set to False to skip bootstrapping salt. Defaults to True.
     """
     bootstrap = boolean(bootstrap)
-    create_minion_key = boolean(create_minion_key)
 
     name = hostname()
     local('fab {master_name} create_minion_key:{name}'.format(
@@ -157,22 +162,31 @@ def setup_minion(minion_to_master, master_name, bootstrap=True):
     ))
     upload_keys_to_minion(name)
 
-    bootstrap_salt(master=False, minion=True)
+    if bootstrap:
+        bootstrap_salt(master=False, minion=True, upgrade=upgrade)
     server_name = env.servers[env.host_string]['name']
     # upload minion config
     config = get_config(servers)
-    master_config = config.find_file('minion')
+    minion_config = config.find_file('minion')
     context = dict(
         salt_data_dir=settings.salt_data_dir,
         configs=config.names,
         roles=settings.salt_minion_roles + servers.roles_for_server(server_name),
-        master=master_address,
+        master=minion_to_master,
     )
     sudo('mkdir -p {salt_data_dir}; true'.format(**context))
-    files.upload_template(master_config, os.path.join(context['salt_data_dir'], 'minion'), context=context, use_jinja=True, use_sudo=True)
+    sudo('mkdir -p /etc/salt/; true'.format(**context))
+    files.upload_template(minion_config, os.path.join('/etc/salt/', 'minion'), context=context, use_jinja=True, use_sudo=True)
+
+    if restart_service:
+        opsys = get_operating_system(settings.os_detectors)
+        bootstrap = settings.bootstrap_for_operating_system(opsys)
+        sudo(bootstrap['stop-minion'])
+        sudo(bootstrap['start-minion'])
 
 
 @task
+@check_for_sudo
 def setup_master(and_minion=True):
     """Sets up the master.
 
@@ -184,7 +198,7 @@ def setup_master(and_minion=True):
     bootstrap_salt(master=True, minion=and_minion)
     # upload master config
     server_name = env.servers[env.host_string]['name']
-    config = settings.configuration_for_server(server_name)
+    config = servers.configuration_for_server(server_name)
     master_config = config.find_file('master')
     context = dict(
         salt_data_dir=settings.salt_data_dir,
@@ -192,19 +206,65 @@ def setup_master(and_minion=True):
         roles=settings.salt_master_roles + servers.roles_for_server(server_name),
     )
     sudo('mkdir -p {salt_data_dir}; true'.format(**context))
-    files.upload_template(master_config, os.path.join(context['salt_data_dir'], 'master'), context=context, use_jinja=True, use_sudo=True)
+    sudo('mkdir -p /etc/salt/; true'.format(**context))
+    files.upload_template(master_config, os.path.join('/etc/salt/', 'master'), context=context, use_jinja=True, use_sudo=True)
 
     if and_minion:
-        setup_minion('127.0.0.1', env.host_string, bootstrap=False)
+        setup_minion('127.0.0.1', server_name, bootstrap=False, restart_service=False)
+        env.just_bootstrapped = True
+
+    opsys = get_operating_system(settings.os_detectors)
+    bootstrap = settings.bootstrap_for_operating_system(opsys)
+    sudo(bootstrap['stop-master'])
+    sudo(bootstrap['stop-minion'])
+    sudo(bootstrap['start-master'])
+    sudo(bootstrap['start-minion'])
 
 
 @task
+@check_for_sudo
 def hostname(name='', fqdn=False):
     "Gets or sets the machine's hostname"
+    fqdn = boolean(fqdn)
     if name:
         previous_host = run('hostname').strip()
         sudo('hostname ' + name)
         sudo('echo {0} > /etc/hostname'.format(name))
         files.sed('/etc/hosts', previous_host, name, use_sudo=True)
     else:
-        return sudo('hostname {0}'.format('-f' if boolean(fqdn) else '')).strip()
+        return sudo('hostname {0}'.format('-f' if fqdn else '')).strip()
+
+@task
+@check_for_sudo
+def deploy(filter='*', solo=False):
+    """Tells master to send pillars and execute salt state files on clients.
+
+    If debug is set to 'yes', runs locally with more debugging information output.
+    If upload is set to 'yes', then uploads current salt configurations to the master before deploying.
+    """
+    solo = boolean(solo)
+
+    if env.just_bootstrapped:
+        print "Waiting 30 seconds for minions to connect to master"
+        sleep(30)
+
+    sudo('mkdir -p {0!r}; true'.format(settings.salt_data_dir))
+    config = get_config(servers)
+
+    for path in config.salt_data_dirs:
+        src = os.path.join('configurations', path)
+        dest = os.path.join(settings.salt_data_dir, path)
+        sudo('mkdir -p {0!r}'.format(dest))
+        sudo('chown -R {0} {1!r}'.format(env.user, dest))
+        sync_dir(src, dest, exclude=['.*'])
+        sudo('chown -R root {0!r}'.format(dest))
+        sudo('chgrp -R {0} {1!r}'.format(group(), dest))
+
+    sudo('salt --version')
+    if solo:
+        sudo('salt-call state.highstate -l debug')
+    else:
+        sudo('salt {0!r} test.version'.format(filter))
+        sudo('salt {0!r} saltutil.refresh_pillar'.format(filter))
+        sudo('salt {0!r} saltutil.sync_all'.format(filter))
+        sudo('salt {0!r} state.highstate'.format(filter))
