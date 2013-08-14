@@ -5,8 +5,8 @@
     file.managed:
         - onlyif: '[ -e /etc/monit/conf.d/ ]'
         - source: salt://monit/files/conf.d/basic.conf.template
-        - user: {{ salt['pillar.get']('root:user', 'root') }}
-        - group: {{ salt['pillar.get']('root:group', 'root') }}
+        - user: root
+        - group: root
         - template: jinja
         - defaults:
             name: {{ pillar['packages'].get('salt-minion', {}).get('service', 'salt-minion') }}

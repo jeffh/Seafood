@@ -5,8 +5,8 @@
     optional_file.managed:
         - onlyif: '[ -e /etc/monit/conf.d/ ]'
         - source: salt://monit/files/conf.d/basic.conf.template
-        - user: {{ salt['pillar.get']('root:user', 'root') }}
-        - group: {{ salt['pillar.get']('root:group', 'root') }}
+        - user: root
+        - group: root
         - template: jinja
         - defaults:
             name: {{ pillar['packages'].get('salt-master', {}).get('service', 'salt-master') }}
@@ -16,8 +16,8 @@
     optional_file.managed:
         - onlyif: '[ -e /etc/ufw/applications.d/ ]'
         - source: salt://ufw/application.conf
-        - user: {{ salt['pillar.get']('root:user', 'root') }}
-        - group: {{ salt['pillar.get']('root:group', 'root') }}
+        - user: root
+        - group: root
         - template: jinja
         - defaults:
             ports: "{{ pillar['salt-master']['pub_port'] }},{{ pillar['salt-master']['ret_port'] }}/tcp"

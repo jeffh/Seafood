@@ -1,0 +1,3 @@
+python:
+    package:
+        - installed

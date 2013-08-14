@@ -48,3 +48,12 @@ repo-keys:
     #remove-keys:
     #   jenkins-ci.org.key:
     #       id: D50582E6
+
+# describing the root user
+root:
+    user: root
+    {% if grains['os'] == 'MacOS' %}
+    group: wheel
+    {% else %}
+    group: root
+    {% endif %}

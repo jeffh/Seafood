@@ -3,10 +3,10 @@ servers:
         host: 'jeff@192.168.1.10'
         password: 'p'
         roles:
-            - developer
+            - desktop
         configurations:
             - base
-            - pivotal_workstation
+            - osx
     vagrant:
         host: 'vagrant@192.168.33.10'
         password: 'vagrant'
@@ -14,5 +14,6 @@ servers:
             - yacs
         configurations:
             - base
+            - linux
             - net.jeffhui
 

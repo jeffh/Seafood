@@ -1,4 +1,5 @@
 import os
+import time
 
 from fabric.api import sudo, task, put, get, env, run, local
 from fabric.contrib import files
@@ -246,7 +247,7 @@ def deploy(filter='*', solo=False):
 
     if env.just_bootstrapped:
         print "Waiting 30 seconds for minions to connect to master"
-        sleep(30)
+        time.sleep(30)
 
     sudo('mkdir -p {0!r}; true'.format(settings.salt_data_dir))
     config = get_config(servers)
@@ -267,4 +268,5 @@ def deploy(filter='*', solo=False):
         sudo('salt {0!r} test.version'.format(filter))
         sudo('salt {0!r} saltutil.refresh_pillar'.format(filter))
         sudo('salt {0!r} saltutil.sync_all'.format(filter))
+        time.sleep(1)
         sudo('salt {0!r} state.highstate'.format(filter))
