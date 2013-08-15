@@ -15,6 +15,7 @@ osx_base:
         - require:
             - file: '{{ pillar['caches']['packages'] }}'
             - file: '{{ pillar['caches']['tmp'] }}'
+            - file: '{{ pillar['caches']['hashes'] }}'
         - order: 0
 
 '{{ pillar['caches']['packages'] }}':

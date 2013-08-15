@@ -13,7 +13,11 @@ base:
         - caffeine
         - ccmenu
         - chrome
+        - firefox
         - dropbox
+        - iterm
+        - shiftit
+        - system_preferences.remote_desktop
         - system_preferences.remote_login
         - system_preferences.power_management
         - system_preferences.standby_delay

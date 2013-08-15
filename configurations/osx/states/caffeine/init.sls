@@ -1,6 +1,9 @@
 {% set pkgs=pillar['caches']['packages'] %}
 {% set scripts=pillar['caches']['scripts'] %}
 
+include:
+    - osx_base
+
 caffeine:
     file.managed:
         - name: {{ pkgs }}/caffeine.zip

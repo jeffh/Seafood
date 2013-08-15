@@ -1,6 +1,9 @@
 {% set pkgs=pillar['caches']['packages'] %}
 {% set scripts=pillar['caches']['scripts'] %}
 
+include:
+    - osx_base
+
 dropbox:
     file.managed:
         - name: '{{ pkgs }}/dropbox.dmg'
