@@ -13,11 +13,8 @@ xquartz:
         - source_hash: sha256={{ sha256hash }}
     cmd.script:
         - source: salt://osx_base/scripts/dmg_and_install.sh
-        - template: jinja2
-        - args: 
-            - XQuartz.dmg
-            - XQuartz.pkg
-            - '{{ sha256hash }}'
+        - template: jinja
+        - args: XQuartz.dmg XQuartz.pkg '{{ sha256hash }}'
         - stateful: True
         - watch:
             - file: xquartz

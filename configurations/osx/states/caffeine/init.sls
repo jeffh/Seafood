@@ -12,10 +12,8 @@ caffeine:
         - backup: False
     cmd.script:
         - source: salt://osx_base/scripts/unzip_and_mv.sh
-        - template: jinja2
-        - args:
-            - caffeine.zip
-            - Caffeine 2.app
+        - template: jinja
+        - args: "caffeine.zip 'Caffeine 2.app'"
         - stateful: True
         - watch:
             - file: caffeine

@@ -11,10 +11,8 @@ ccmenu:
         - source_hash: sha256=7cbdc6b3ff477fe420ab121e0892e0aebc48b1a9620aacfb6324932900d6b6cc
     cmd.script:
         - source: salt://osx_base/scripts/dmg_and_cp.sh
-        - template: jinja2
-        - args: 
-            - ccmenu.dmg
-            - CCMenu.app
+        - template: jinja
+        - args: ccmenu.dmg CCMenu.app
         - stateful: True
         - watch:
             - file: chrome

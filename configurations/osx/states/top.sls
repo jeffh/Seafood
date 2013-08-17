@@ -17,6 +17,7 @@ base:
         - dropbox
         - iterm
         - shiftit
+        - macvim
         - system_preferences.remote_desktop
         - system_preferences.remote_login
         - system_preferences.power_management

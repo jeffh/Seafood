@@ -55,6 +55,9 @@ def group():
     return group
 
 def check_for_sudo(fn):
+    """Wraps a task to with a sudo command to avoid sudo warning messages
+    from potentially tampering with sudo commands that expect output.
+    """
     @wraps(fn)
     def wrapper(*args, **kwargs):
         silent_sudo('echo test')

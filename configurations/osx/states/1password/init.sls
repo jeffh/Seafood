@@ -12,10 +12,8 @@ include:
         - backup: False
     cmd.script:
         - source: salt://osx_base/scripts/unzip_and_mv.sh
-        - template: jinja2
-        - args: 
-            - 1password.zip
-            - 1Password.app
+        - template: jinja
+        - args: 1password.zip 1Password.app
         - stateful: True
         - watch:
             - file: 1password

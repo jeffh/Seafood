@@ -5,8 +5,8 @@ osx_base:
         - backup: False
         - user: {{ salt['pillar.get']('root:user', 'root') }}
         - group: {{ salt['pillar.get']('root:group', 'root') }}
-        - dir_mode: 755
-        - file_mode: 744
+        - dir_mode: 777
+        - file_mode: 777
         - makedirs: True
         - recurse:
             - user
@@ -22,8 +22,8 @@ osx_base:
     file.directory:
         - user: {{ salt['pillar.get']('root:user', 'root') }}
         - group: {{ salt['pillar.get']('root:group', 'root') }}
-        - dir_mode: 744
-        - file_mode: 644
+        - dir_mode: 777
+        - file_mode: 777
         - makedirs: True
         - recurse:
             - user
@@ -35,6 +35,7 @@ osx_base:
         - user: {{ salt['pillar.get']('root:user', 'root') }}
         - group: {{ salt['pillar.get']('root:group', 'root') }}
         - dir_mode: 777
+        - file_mode: 777
         - makedirs: True
         - recurse:
             - user
@@ -45,8 +46,8 @@ osx_base:
     file.directory:
         - user: {{ salt['pillar.get']('root:user', 'root') }}
         - group: {{ salt['pillar.get']('root:group', 'root') }}
-        - dir_mode: 744
-        - file_mode: 644
+        - dir_mode: 777
+        - file_mode: 777
         - makedirs: True
         - recurse:
             - user
