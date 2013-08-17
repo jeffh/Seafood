@@ -1,11 +1,13 @@
-Things that can be improved:
- - Finish PHP support
+Linux things:
  - Finish HG support
  - Fix/Remove golang
  - Add ability to set global configs to git
  - TEST on another linux distro!
 
-pivotal_workstation:
+OSX Things:
+ - OSX bootstrap from url (eg - full system setup without seafood on another machine)
+
+OSX packages/states (from pivotal_workstation / sprout):
  x 1password
  x ack
  - active_corners (?)
@@ -31,14 +33,14 @@ pivotal_workstation:
  - defaults_fast_key_repeat_rate
  - diff_merge
  - dock_preferences
- - dropbox
+ x dropbox
  - ec2_api_tools (??)
  - enable_assistive_devices
  - erlang
  - evernote
  - finder_display_full_path
  - findutils
- - firefox
+ x firefox
  - firefox_aurora
  - flux
  - flycut
@@ -56,7 +58,7 @@ pivotal_workstation:
  - google_chrome_prevent_updates
  - grid
  - heroku_toolbelt
- - homebrew
+ x homebrew
  - hub
  - imagemagick
  - increase_shared_memory (???)
@@ -65,7 +67,7 @@ pivotal_workstation:
  - intellj_community_edition
  - intellij_ultimate_edition
  - istatmenus
- - iterm2
+ x iterm2
  - java
  - joe (???)
  - jpegoptim (???)
@@ -127,7 +129,7 @@ pivotal_workstation:
  - set_multitouch_preferences
  - set_screensave_preferences
  - set_start_up_automatically
- - shiftit
+ x shiftit
  - siege
  - sizeup
  - skype
@@ -136,7 +138,7 @@ pivotal_workstation:
  - source_code_pro_font
  - sourcetree
  - ssh_copy_id
- - sshd_on
+ x sshd_on
  - ssl_certificate
  - standby-delay
  - sublime_text
@@ -158,7 +160,7 @@ pivotal_workstation:
  - unix_essentials
  - user_owns_usr_local
  - vagrant
- - vim
+ x vim
  - virtualbox
  - viscosity
  - vlc

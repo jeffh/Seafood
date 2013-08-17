@@ -1,6 +1,12 @@
 jenkins:
+    pkgrepo.managed:
+    - humanname: Jenkins upstream package repository
+    - name: deb http://pkg.jenkins-ci.org/debian binary/
+    - key_url: http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key
     package:
         - installed
+        - require:
+            - pkgrepo: jenkins
     service.running:
         - watch:
             - package: jenkins
