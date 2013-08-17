@@ -62,7 +62,7 @@ Let's do a basic deploy using `fabric`_. First, we'll set up the salt master::
 
     fab deploy_host upload_key setup_master
 
-.. _fabric: http://docs.fabfile.org/en/1.4.3/index.html
+.. _fabric: http://fabfile.org
 
 Let's break this command down:
 
@@ -100,27 +100,6 @@ What does this do?
 And that's it! You can look around and create your own configurations to tinker
 around with salt. Generally, all the shared states go in 'base', where system
 group specific configurations are in their own directories.
-
------------------
-External Packages
------------------
-
-
-NOTE: broken for now
-
-Some packages are not in the system repositories. For example, `elasticsearch`.
-Using `packages.json`, the packages can be downloaded without being tracked
-in the repository. For salt to use these files, they're specified in the
-packages.sls pillar.
-
-The packages can be download by running::
-
-    fab download_external_files
-
-Which will download the first package it finds in each group. If you prefer to
-download all versions use::
-
-    fab download_external_files:everything=True
 
 ---
 OSX
