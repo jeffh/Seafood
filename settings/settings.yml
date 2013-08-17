@@ -35,7 +35,7 @@ bootstrap:
             stop-minion: launchctl stop org.saltstack.salt-minion
             files:
                 # you must login to http://developer.apple.com and download this file
-                - 'osx/xcode462_cltools_10_86938259a.dmg'
+                - 'osx/xcode_cltools.dmg'
                 - salt://osx/org.saltstack.salt-master.plist
                 - salt://osx/org.saltstack.salt-minion.plist
 

@@ -67,7 +67,7 @@ if [ "$VERSION" == "git" ]; then
 fi
 
 function install_cltools {
-    hdiutil mount 'xcode462_cltools_10_86938259a.dmg'
+    hdiutil mount 'xcode_cltools.dmg'
     volume="/Volumes/Command Line Tools (Mountain Lion)"
     installer -pkg "$volume/Command Line Tools (Mountain Lion).mpkg" -target /
     hdiutil detach "$volume"
