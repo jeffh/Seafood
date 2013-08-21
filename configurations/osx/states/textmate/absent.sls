@@ -1,3 +1,3 @@
 textmate:
-	file.absent:
-		- name: /Applications/TextMate.app
+    file.absent:
+        - name: /Applications/TextMate.app

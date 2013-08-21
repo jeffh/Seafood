@@ -1,6 +1,6 @@
 include:
-	- directories
-	
+    - directories
+    
 minecraft-server:
     file.managed:
         - name: '/opt/minecraft-server/server.jar'
@@ -9,10 +9,10 @@ minecraft-server:
             - file: '/opt/minecraft-server/'
 
 '/opt/minecraft-server/':
-	file.directory:
-		- user: {{ pillar['root']['user'] }}
-		- group: {{ pillar['root']['group'] }}
-		- file_mode: 755
-		- dir_mode: 755
-		- require:
-			- file: '/opt/'
+    file.directory:
+        - user: {{ pillar['root']['user'] }}
+        - group: {{ pillar['root']['group'] }}
+        - file_mode: 755
+        - dir_mode: 755
+        - require:
+            - file: '/opt/'

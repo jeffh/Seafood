@@ -1,3 +1,3 @@
 skype:
-	file.absent:
-		- name: /Applications/Skype.app
+    file.absent:
+        - name: /Applications/Skype.app
