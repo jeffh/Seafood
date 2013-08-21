@@ -1,8 +1,7 @@
 fail2ban:
     package:
         - installed
-    service:
-        - running
+    service.running:
         - require:
             - package: fail2ban
         - watch:

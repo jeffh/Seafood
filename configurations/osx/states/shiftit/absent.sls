@@ -1,3 +1,3 @@
 shiftit:
-    - file.absent:
+    file.absent:
         - name: '/Applications/ShiftIt.app'

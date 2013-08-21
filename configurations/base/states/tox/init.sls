@@ -1,8 +1,8 @@
 include:
     - pip
 
-virtualenv:
+tox:
     pip.installed:
-        - name: virtualenv
         - require:
             - package: pip
+
