@@ -20,6 +20,9 @@ base:
         - macvim
         - lein
 		- textmate
+		- skype
+		- minecraft
+		- minecraft.server
         - system_preferences.remote_desktop
         - system_preferences.remote_login
         - system_preferences.power_management
