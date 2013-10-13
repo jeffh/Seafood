@@ -16,7 +16,7 @@ class Configuration(object):
             paths.append(os.path.join(path, 'states'))
             paths.append(os.path.join(path, 'pillars'))
         return paths
-
+        
     def find_file(self, relpath):
         for name in reversed(self.names):
             filepath = os.path.relpath(os.path.join('configurations', name, relpath))
@@ -83,7 +83,7 @@ class Settings(FileSettings):
         }
         result.update(self.data['bootstrap']['operating-systems'][key])
         return result
-
+        
     @property
     def master_minion_keys_dir(self):
         return self.data['salt-master']['minion-keys-dir']

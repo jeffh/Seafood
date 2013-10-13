@@ -2,7 +2,7 @@ base:
     '*':
         - base.packages
         - base.sshd
-        - base.postgres
+        - linux.postgres
         - shared.users
         - shared.sshd
     'roles:salt-master':

@@ -9,6 +9,7 @@ from bootstrap.utils import (
     group, boolean, open_file, get_operating_system, get_config,
     generate_server_names_as_tasks, sync_dir, check_for_sudo,
 )
+from bootstrap.hash_updater import update_source_hashes
 
 env.passwords = {}
 env.servers = {}
@@ -270,3 +271,29 @@ def deploy(filter='*', solo=False):
         sudo('salt {0!r} saltutil.sync_all'.format(filter))
         time.sleep(1)
         sudo('salt {0!r} state.highstate'.format(filter))
+        
+@task
+@check_for_sudo
+def deploy_over_ssh(filter='*'):
+    sudo('mkdir -p {0!r}; true'.format(settings.salt_data_dir))
+    config = get_config(servers)
+    
+    config_dirs = []
+    for path in config.salt_data_dirs:
+        src = os.path.join('configurations', path)
+        config_dirs.append(src)
+
+    local('salt-ssh {0!r} state.highstate'.format(filter))
+
+@task
+def find_hashes_to_update():
+    """Reads all local states - then downloads & rehashes the downloads.
+    """
+    files = local("find . -name '*.sls'", capture=True).strip().splitlines()
+    for file in files:
+        with open(file) as handle:
+            data = handle.read()
+            new_data, changed = update_source_hashes(data)
+            if changed:
+                print '==> file updated:', file
+                print new_data

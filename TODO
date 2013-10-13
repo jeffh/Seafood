@@ -132,7 +132,7 @@ OSX packages/states (from pivotal_workstation / sprout):
  x shiftit
  - siege
  - sizeup
- - skype
+ x skype
  - snmpd
  - solr
  - source_code_pro_font
@@ -142,12 +142,11 @@ OSX packages/states (from pivotal_workstation / sprout):
  - ssl_certificate
  - standby-delay
  - sublime_text
- - svn
  - tcp_keepalive
  - terminal_focus (???)
  - terminal_preferences
- - textmate
- - textmate2
+ x textmate
+ x textmate2
  - textmate_bundles
  - textmate_plugins
  - textmate_preferences

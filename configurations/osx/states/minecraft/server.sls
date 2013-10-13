@@ -6,6 +6,7 @@ minecraft-server:
         - name: '/opt/minecraft-server/server.jar'
         - source: https://s3.amazonaws.com/Minecraft.Download/versions/1.6.2/minecraft_server.1.6.2.jar
         - source_hash: sha256=654726af24a9a6b138b11ae426f3025621259211dd50abead7b0b2880fa9b0d8
+        - require:
             - file: '/opt/minecraft-server/'
 
 '/opt/minecraft-server/':
